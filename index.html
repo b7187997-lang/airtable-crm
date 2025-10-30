@@ -1,266 +1,341 @@
-<script>
-    // *** משתנים גלובליים ***
-    let nextOffset = null;
-    let isLoading = false;
-    let editingRecordId = null;
-    let allRecords = []; // המערך הראשי שמכיל את כל הרשומות שנטענו עד כה
-    let isFiltering = false; // דגל שבודק אם יש סינון פעיל
-
-    // *** פונקציות עזר ***
-
-    // ממיר מערך של רשומות Airtable לאובייקט שטוח יותר
-    function formatRecords(records) {
-        return records.map(record => ({
-            id: record.id,
-            fields: record.fields
-        }));
-    }
-
-    // *** פונקציית טעינה ***
-
-    async function fetchRecords(reset = false) {
-        // מונע קריאות כפולות או טעינה כשיש סינון פעיל
-        if (isLoading || (!reset && nextOffset === null && allRecords.length > 0)) return;
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת CRM - Airtable</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* CSS בסיסי (כפי הנראה שהיה קיים) */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F5F5F5; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .sidebar { background-color: #343a40; min-height: 100vh; padding-top: 20px; color: white; }
+        .sidebar a { color: #adb5bd; padding: 10px 15px; display: block; text-decoration: none; border-radius: 5px; margin-bottom: 5px; }
+        .sidebar a:hover, .sidebar a.active { background-color: #495057; color: white; }
+        .content { padding: 30px; }
+        .table th, .table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .modal.show { display: block; background: rgba(0,0,0,0.5); }
+        .modal-dialog { max-width: 800px; }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <div class="sidebar d-none d-md-block">
+            <h4 class="text-center mb-4">מערכת CRM</h4>
+            <a href="#" class="active">רשימת שמות</a>
+            <a href="#">דוחות</a>
+            <a href="#">הגדרות</a>
+        </div>
         
-        // **תיקון קריטי 1: מניעת טעינת דפים נוספים בזמן סינון**
-        if (isFiltering && !reset) {
-            document.getElementById('loadMoreContainer').style.display = 'none';
-            return;
-        }
+        <div class="content flex-grow-1">
+            <header class="header mb-4">
+                <h1>רשימת שמות</h1>
+                <p>ניהול כללי עם אפשרויות עריכה, הוספה ומחיקה.</p>
+            </header>
 
-        isLoading = true;
-        document.getElementById('loadingIndicator').style.display = 'block';
+            <div class="card p-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button id="addNewRecord" class="btn btn-success">הוסף רשומה חדשה</button>
+                    <div class="input-group w-auto">
+                        <input type="text" id="searchInput" class="form-control" placeholder="חפש...">
+                        <span class="input-group-text"><i class="fas fa-search">🔍</i></span>
+                    </div>
+                </div>
 
-        if (reset) {
-            allRecords = [];
-            nextOffset = null;
-            // איפוס גם בממשק
-            document.getElementById('tableBody').innerHTML = ''; 
-        }
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>שם המונצח</th>
+                                <th>שם משפחה מונצח</th>
+                                <th>טלפון</th>
+                                <th>הערות</th>
+                                <th class="text-center">פעולות</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            </tbody>
+                    </table>
+                </div>
 
-        let url = '/.netlify/functions/airtable';
-        if (nextOffset && !reset) {
-            url += `?offset=${nextOffset}`;
-        }
-        
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'שגיאה כללית בטעינת נתונים');
-            }
+                <div id="loadingIndicator" class="text-center mt-3" style="display:none;">טוען...</div>
 
-            const newRecords = formatRecords(data.records);
-            
-            // **תיקון קריטי 2: שמירת הרשומות המלאות**
-            allRecords.push(...newRecords);
-            nextOffset = data.offset || null;
+                </div>
+        </div>
+    </div>
 
-            // הצגת הרשומות החדשות
-            displayRecords(newRecords, reset);
+    <div class="modal" id="recordModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">הוספת רשומה חדשה</h5>
+                    <button type="button" class="btn-close" onclick="closeModal()" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="recordForm">
+                        <div class="mb-3">
+                            <label for="recordId" class="form-label"># (מזהה רשומה - מ-Airtable)</label>
+                            <input type="text" class="form-control" id="recordId" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="recordName" class="form-label">שם המונצח</label>
+                            <input type="text" class="form-control" id="recordName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="recordFamilyName" class="form-label">שם משפחה מונצח</label>
+                            <input type="text" class="form-control" id="recordFamilyName">
+                        </div>
+                        <div class="mb-3">
+                            <label for="recordPhone" class="form-label">טלפון</label>
+                            <input type="tel" class="form-control" id="recordPhone">
+                        </div>
+                        <div class="mb-3">
+                            <label for="recordNotes" class="form-label">הערות</label>
+                            <textarea class="form-control" id="recordNotes"></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" onclick="closeModal()">בטל</button>
+                            <button type="submit" class="btn btn-primary">שמור שינויים</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-            // עדכון כפתור "טען עוד"
-            if (nextOffset) {
-                document.getElementById('loadMoreContainer').style.display = 'block';
-            } else {
-                document.getElementById('loadMoreContainer').style.display = 'none';
-            }
+    <script>
+        // *** משתנים גלובליים ***
+        let isLoading = false;
+        let editingRecordId = null;
+        let allRecords = []; // המערך הראשי שמכיל את כל הרשומות שנטענו
+        let isFiltering = false; 
 
-        } catch (error) {
-            console.error("שגיאה בטעינת נתונים מ-Airtable:", error);
-            document.getElementById('loadingIndicator').innerText = 'שגיאה בטעינת נתונים.';
-        } finally {
-            isLoading = false;
-            if (document.getElementById('loadingIndicator').innerText === 'טוען...') {
-                 document.getElementById('loadingIndicator').style.display = 'none';
-            }
-        }
-    }
+        // *** פונקציות עזר ***
 
-    // *** פונקציית הצגת נתונים ***
-
-    function displayRecords(recordsToDisplay, reset) {
-        const tbody = document.getElementById('tableBody');
-
-        if (reset) {
-            tbody.innerHTML = '';
-        }
-        
-        if (allRecords.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7">לא נמצאו רשומות.</td></tr>';
-            return;
-        }
-
-        recordsToDisplay.forEach(record => {
-            const row = tbody.insertRow();
-            row.setAttribute('data-id', record.id);
-            
-            // יצירת התאים (מותאם לקוד ה-HTML ששלחת)
-            // ודא ששמות השדות בתוך record.fields תואמים בדיוק לשמות השדות ב-Airtable!
-            row.innerHTML = `
-                <td>${record.fields['#'] || ''}</td>
-                <td>${record.fields['שם המונצח'] || ''}</td>
-                <td>${record.fields['שם משפחה מונצח'] || ''}</td>
-                <td>${record.fields['טלפון'] || ''}</td>
-                <td>${record.fields['הערות'] || ''}</td>
-                <td class="text-center">
-                    <button onclick="editRecord('${record.id}')" class="btn btn-warning btn-sm">ערוך</button>
-                    <button onclick="deleteRecord('${record.id}')" class="btn btn-danger btn-sm">מחק</button>
-                </td>
-            `;
-        });
-    }
-
-    // *** פונקציות עריכה ומחיקה ***
-
-    function editRecord(id) {
-        const record = allRecords.find(r => r.id === id);
-        if (record) {
-            editingRecordId = id;
-            document.getElementById('modalTitle').innerText = 'עריכת רשומה';
-            document.getElementById('recordId').value = record.fields['#'] || '';
-            document.getElementById('recordName').value = record.fields['שם המונצח'] || '';
-            document.getElementById('recordFamilyName').value = record.fields['שם משפחה מונצח'] || '';
-            document.getElementById('recordPhone').value = record.fields['טלפון'] || '';
-            document.getElementById('recordNotes').value = record.fields['הערות'] || '';
-            openModal();
-        }
-    }
-
-    async function deleteRecord(id) {
-        if (!confirm('האם אתה בטוח שברצונך למחוק רשומה זו?')) return;
-
-        try {
-            const response = await fetch(`/.netlify/functions/airtable?id=${id}`, {
-                method: 'DELETE',
-            });
-            if (!response.ok) throw new Error('שגיאה במחיקת הרשומה');
-
-            // הסר את הרשומה מהמערך המקומי
-            allRecords = allRecords.filter(r => r.id !== id);
-            
-            // רענן את התצוגה (reset=true כדי לנקות את הטבלה ולהציג את כל הנתונים המעודכנים)
-            // *רצוי פשוט למחוק את השורה מה-DOM לביצוע מהיר יותר, אבל טעינה מחדש מבטיחה סנכרון*
-            await fetchRecords(true); 
-
-        } catch (error) {
-            alert(`שגיאה במחיקה: ${error.message}`);
-        }
-    }
-
-    // *** לוגיקת ממשק משתמש (Modal, Submit, Filter) ***
-
-    function openModal() {
-        document.getElementById('recordModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal() {
-        document.getElementById('recordModal').classList.remove('show');
-        document.body.style.overflow = 'auto';
-        document.getElementById('recordForm').reset();
-        // **תיקון קריטי 3: איפוס ה-ID לאחר סגירת המודל**
-        editingRecordId = null; 
-    }
-
-    document.getElementById('addNewRecord').addEventListener('click', () => {
-        document.getElementById('modalTitle').innerText = 'הוספת רשומה חדשה';
-        editingRecordId = null; 
-        document.getElementById('recordForm').reset();
-        openModal();
-    });
-
-    document.getElementById('recordForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const recordId = document.getElementById('recordId').value;
-        const name = document.getElementById('recordName').value;
-        const familyName = document.getElementById('recordFamilyName').value;
-        const phone = document.getElementById('recordPhone').value;
-        const notes = document.getElementById('recordNotes').value;
-
-        const fields = {
-            '#': recordId,
-            'שם המונצח': name,
-            'שם משפחה מונצח': familyName,
-            'טלפון': phone,
-            'הערות': notes,
-        };
-
-        const method = editingRecordId ? 'PATCH' : 'POST';
-        let url = '/.netlify/functions/airtable';
-        if (editingRecordId) {
-            url += `?id=${editingRecordId}`;
+        function formatRecords(records) {
+            return records.map(record => ({
+                id: record.id,
+                fields: record.fields
+            }));
         }
         
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fields }),
-            });
+        // פונקציה לפתיחת המודל
+        function openModal() {
+            document.getElementById('recordModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
 
-            if (!response.ok) throw new Error('שגיאה בשמירת הרשומה');
-
-            closeModal();
-            // **תיקון קריטי 4: איפוס ה-ID לאחר שמירה מוצלחת**
+        // פונקציה לסגירת המודל
+        function closeModal() {
+            document.getElementById('recordModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+            document.getElementById('recordForm').reset();
+            // **תיקון קריטי 1: איפוס ה-ID לאחר סגירת המודל**
             editingRecordId = null; 
-            
-            // טען מחדש את כל הנתונים מההתחלה כדי לקבל את הרשומה החדשה/המעודכנת
-            await fetchRecords(true);
-        } catch (error) {
-            alert(`שגיאה בשמירה: ${error.message}`);
         }
-    });
 
-    // *** לוגיקת סינון ***
-    
-    function filterRecords() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        
-        if (searchTerm.length > 0) {
-            isFiltering = true;
-            document.getElementById('loadMoreContainer').style.display = 'none';
+        // *** פונקציית טעינה (כעת טוענת הכל) ***
 
-            const filtered = allRecords.filter(record => {
-                const name = record.fields['שם המונצח'] || '';
-                const familyName = record.fields['שם משפחה מונצח'] || '';
-                const phone = record.fields['טלפון'] || '';
+        async function fetchRecords(reset = false) {
+            if (isLoading) return;
+            
+            isLoading = true;
+            document.getElementById('loadingIndicator').style.display = 'block';
+
+            if (reset) {
+                allRecords = [];
+                document.getElementById('tableBody').innerHTML = ''; 
+            }
+
+            // הקריאה כעת אינה מכילה offset, שכן ה-Backend משתמש ב-all()
+            let url = '/.netlify/functions/airtable'; 
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
                 
-                return name.toLowerCase().includes(searchTerm) ||
-                       familyName.toLowerCase().includes(searchTerm) ||
-                       phone.includes(searchTerm);
-            });
-            
-            // הצגת הרשומות המסוננות (reset=true מנקה את הטבלה לפני ההצגה)
-            displayRecords(filtered, true);
-        } else {
-            // **תיקון קריטי 5: ביטול סינון והצגת כל הרשומות שנטענו**
-            isFiltering = false;
-            
-            // הצגת כל רשומות המאסטר שנטענו עד כה
-            displayRecords(allRecords, true); 
-            
-            // הצג את כפתור "טען עוד" רק אם יש Offset נוסף
-            if (nextOffset) {
-                document.getElementById('loadMoreContainer').style.display = 'block';
+                if (!response.ok) {
+                    throw new Error(data.error || 'שגיאה כללית בטעינת נתונים');
+                }
+
+                const newRecords = formatRecords(data.records);
+                
+                // **שמירת כל הרשומות במערך המאסטר**
+                allRecords = newRecords; 
+
+                // הצגת הרשומות הנטענות
+                displayRecords(allRecords, true); // הצג את כל הרשומות
+
+            } catch (error) {
+                console.error("שגיאה בטעינת נתונים מ-Airtable:", error);
+                document.getElementById('loadingIndicator').innerText = 'שגיאה בטעינת נתונים.';
+            } finally {
+                isLoading = false;
+                if (document.getElementById('loadingIndicator').innerText === 'טוען...') {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                }
             }
         }
-    }
 
-    // *** אתחול ***
+        // *** פונקציית הצגת נתונים ***
 
-    document.addEventListener('DOMContentLoaded', () => {
-        // טען את הדף הראשון עם טעינה ראשונית (reset=true)
-        fetchRecords(true); 
+        function displayRecords(recordsToDisplay, reset) {
+            const tbody = document.getElementById('tableBody');
 
-        // קישור כפתור "טען עוד"
-        document.getElementById('loadMore').addEventListener('click', () => {
-            fetchRecords(false); // טען את הדף הבא
+            if (reset) {
+                tbody.innerHTML = '';
+            }
+            
+            if (recordsToDisplay.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">לא נמצאו רשומות.</td></tr>';
+                return;
+            }
+
+            recordsToDisplay.forEach(record => {
+                const row = tbody.insertRow();
+                row.setAttribute('data-id', record.id);
+                
+                // ודא ששמות השדות בתוך record.fields תואמים בדיוק לשמות השדות ב-Airtable!
+                row.innerHTML = `
+                    <td>${record.fields['#'] || ''}</td>
+                    <td>${record.fields['שם המונצח'] || ''}</td>
+                    <td>${record.fields['שם משפחה מונצח'] || ''}</td>
+                    <td>${record.fields['טלפון'] || ''}</td>
+                    <td>${record.fields['הערות'] || ''}</td>
+                    <td class="text-center">
+                        <button onclick="editRecord('${record.id}')" class="btn btn-warning btn-sm">ערוך</button>
+                        <button onclick="deleteRecord('${record.id}')" class="btn btn-danger btn-sm">מחק</button>
+                    </td>
+                `;
+            });
+        }
+
+        // *** פונקציות עריכה ומחיקה ***
+
+        function editRecord(id) {
+            const record = allRecords.find(r => r.id === id);
+            if (record) {
+                editingRecordId = id;
+                document.getElementById('modalTitle').innerText = 'עריכת רשומה';
+                document.getElementById('recordId').value = record.fields['#'] || '';
+                document.getElementById('recordName').value = record.fields['שם המונצח'] || '';
+                document.getElementById('recordFamilyName').value = record.fields['שם משפחה מונצח'] || '';
+                document.getElementById('recordPhone').value = record.fields['טלפון'] || '';
+                document.getElementById('recordNotes').value = record.fields['הערות'] || '';
+                openModal();
+            }
+        }
+
+        async function deleteRecord(id) {
+            if (!confirm('האם אתה בטוח שברצונך למחוק רשומה זו?')) return;
+
+            try {
+                const response = await fetch(`/.netlify/functions/airtable?id=${id}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) throw new Error('שגיאה במחיקת הרשומה');
+
+                // הסר את הרשומה מהמערך המקומי
+                allRecords = allRecords.filter(r => r.id !== id);
+                
+                // הצג את הרשומות המעודכנות
+                displayRecords(allRecords, true); 
+
+            } catch (error) {
+                alert(`שגיאה במחיקה: ${error.message}`);
+            }
+        }
+
+        // *** לוגיקת סינון ***
+        
+        function filterRecords() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm.length > 0) {
+                isFiltering = true;
+
+                const filtered = allRecords.filter(record => {
+                    const name = record.fields['שם המונצח'] || '';
+                    const familyName = record.fields['שם משפחה מונצח'] || '';
+                    const phone = record.fields['טלפון'] || '';
+                    
+                    return name.toLowerCase().includes(searchTerm) ||
+                           familyName.toLowerCase().includes(searchTerm) ||
+                           phone.includes(searchTerm);
+                });
+                
+                displayRecords(filtered, true);
+            } else {
+                isFiltering = false;
+                
+                // הצגת כל רשומות המאסטר שנטענו
+                displayRecords(allRecords, true); 
+            }
+        }
+
+        // *** אתחול (מטפל בשגיאת המסך הלבן) ***
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // טען את כל הרשומות בטעינה ראשונית (reset=true)
+            fetchRecords(true); 
+
+            // **קישור כפתור "הוסף רשומה חדשה"**
+            document.getElementById('addNewRecord').addEventListener('click', () => {
+                document.getElementById('modalTitle').innerText = 'הוספת רשומה חדשה';
+                editingRecordId = null; 
+                document.getElementById('recordForm').reset();
+                openModal();
+            });
+
+            // **קישור הטופס (Submit)**
+            document.getElementById('recordForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const recordId = document.getElementById('recordId').value;
+                const name = document.getElementById('recordName').value;
+                const familyName = document.getElementById('recordFamilyName').value;
+                const phone = document.getElementById('recordPhone').value;
+                const notes = document.getElementById('recordNotes').value;
+
+                const fields = {
+                    '#': recordId,
+                    'שם המונצח': name,
+                    'שם משפחה מונצח': familyName,
+                    'טלפון': phone,
+                    'הערות': notes,
+                };
+
+                const method = editingRecordId ? 'PATCH' : 'POST';
+                let url = '/.netlify/functions/airtable';
+                if (editingRecordId) {
+                    url += `?id=${editingRecordId}`;
+                }
+                
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fields }),
+                    });
+
+                    if (!response.ok) throw new Error('שגיאה בשמירת הרשומה');
+
+                    closeModal();
+                    // **תיקון קריטי 2: איפוס ה-ID לאחר שמירה מוצלחת**
+                    editingRecordId = null; 
+                    
+                    // טען מחדש את כל הנתונים מההתחלה כדי לקבל את הרשומה החדשה/המעודכנת
+                    await fetchRecords(true);
+                } catch (error) {
+                    alert(`שגיאה בשמירה: ${error.message}`);
+                }
+            });
+            
+            // **קישור שדה החיפוש**
+            document.getElementById('searchInput').addEventListener('input', filterRecords);
         });
-
-        // קישור שדה החיפוש
-        document.getElementById('searchInput').addEventListener('input', filterRecords);
-    });
-</script>
+    </script>
+</body>
+</html>
