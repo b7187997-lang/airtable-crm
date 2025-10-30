@@ -13,34 +13,36 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Heebo', sans-serif;
-            background: #f8f9fa;
+            background: #f5f7fa;
             color: #2d3748;
         }
 
         /* Header */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
             color: white;
-            padding: 24px 32px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 28px 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .header h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
         }
 
         .header p {
             opacity: 0.95;
-            font-size: 15px;
+            font-size: 16px;
+            font-weight: 500;
         }
 
         /* Toolbar */
         .toolbar {
             background: white;
             border-bottom: 1px solid #e2e8f0;
-            padding: 16px 32px;
+            padding: 20px 40px;
             display: flex;
             gap: 16px;
             align-items: center;
@@ -48,7 +50,7 @@
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 11px 22px;
             border: none;
             border-radius: 8px;
             font-size: 14px;
@@ -61,15 +63,15 @@
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #4a90e2;
             color: white;
-            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+            box-shadow: 0 2px 4px rgba(74, 144, 226, 0.25);
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: #357abd;
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
         }
 
         .btn-secondary {
@@ -83,8 +85,8 @@
 
         .search-input {
             flex: 1;
-            max-width: 400px;
-            padding: 10px 16px;
+            max-width: 450px;
+            padding: 11px 18px;
             border: 2px solid #e2e8f0;
             border-radius: 8px;
             font-size: 14px;
@@ -93,52 +95,72 @@
 
         .search-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
         }
 
         /* Table */
         .table-wrapper {
             background: white;
-            margin: 24px 32px;
+            margin: 32px 40px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
         .table-container {
-            max-height: calc(100vh - 280px);
+            max-height: calc(100vh - 300px);
             overflow: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         thead {
             position: sticky;
             top: 0;
-            background: #f7fafc;
+            background: #f8fafc;
             z-index: 10;
             box-shadow: 0 1px 0 #e2e8f0;
         }
 
         th {
-            padding: 16px 20px;
+            padding: 18px 24px;
             text-align: right;
             font-weight: 700;
-            color: #2d3748;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #1a202c;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+
+        th:first-child {
+            width: 100px;
+            text-align: center;
+        }
+
+        th:last-child {
+            width: 140px;
+            text-align: center;
         }
 
         td {
-            padding: 16px 20px;
-            border-bottom: 1px solid #f7fafc;
+            padding: 18px 24px;
+            border-bottom: 1px solid #f1f5f9;
             color: #4a5568;
+        }
+
+        td:first-child {
+            text-align: center;
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        td:last-child {
+            text-align: center;
         }
 
         tbody tr {
@@ -146,15 +168,15 @@
         }
 
         tbody tr:hover {
-            background: #f7fafc;
+            background: #f8fafc;
         }
 
         .icon-btn {
-            padding: 6px 10px;
+            padding: 7px 12px;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 17px;
             opacity: 0.6;
             transition: all 0.2s;
             border-radius: 6px;
@@ -198,9 +220,9 @@
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
             color: white;
-            padding: 24px 32px;
+            padding: 26px 36px;
             font-size: 24px;
             font-weight: 700;
             display: flex;
@@ -209,7 +231,7 @@
         }
 
         .modal-close {
-            font-size: 28px;
+            font-size: 32px;
             cursor: pointer;
             opacity: 0.9;
             transition: opacity 0.2s;
@@ -217,11 +239,12 @@
             border: none;
             color: white;
             padding: 0;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
+            line-height: 1;
         }
 
         .modal-close:hover {
@@ -229,29 +252,29 @@
         }
 
         .modal-body {
-            padding: 32px;
+            padding: 36px;
             overflow-y: auto;
             flex: 1;
         }
 
         .form-section {
-            margin-bottom: 32px;
+            margin-bottom: 36px;
         }
 
         .form-section-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
+            color: #1a202c;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
             border-bottom: 2px solid #e2e8f0;
         }
 
         .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+            margin-bottom: 22px;
         }
 
         .form-group {
@@ -269,25 +292,25 @@
         .form-group input,
         .form-group select {
             width: 100%;
-            padding: 10px 14px;
+            padding: 11px 15px;
             border: 2px solid #e2e8f0;
             border-radius: 8px;
             font-size: 14px;
             transition: border-color 0.2s;
-            background: #f7fafc;
+            background: #f8fafc;
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #4a90e2;
             background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
         }
 
         .modal-footer {
-            padding: 20px 32px;
-            background: #f7fafc;
+            padding: 22px 36px;
+            background: #f8fafc;
             border-top: 1px solid #e2e8f0;
             display: flex;
             gap: 12px;
@@ -297,18 +320,18 @@
         /* Loading & Empty States */
         .loading-row, .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
             color: #718096;
         }
 
         .spinner {
             border: 3px solid #e2e8f0;
-            border-top: 3px solid #667eea;
+            border-top: 3px solid #4a90e2;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 24px;
         }
 
         @keyframes spin {
@@ -318,16 +341,16 @@
 
         .load-more {
             text-align: center;
-            padding: 24px;
+            padding: 28px;
             color: #718096;
         }
 
         .error-message {
             background: #fed7d7;
             color: #742a2a;
-            padding: 16px 20px;
+            padding: 16px 24px;
             border-radius: 8px;
-            margin: 16px 32px;
+            margin: 20px 40px;
             border-right: 4px solid #fc8181;
         }
 
@@ -345,13 +368,18 @@
             .search-input {
                 max-width: 100%;
             }
+            
+            .header, .toolbar, .table-wrapper {
+                margin: 16px;
+                padding: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🕯️ מערכת ניהול משניות</h1>
-        <p>ניהול רשימת נפטרים ומועדי יאהרצייט</p>
+        <h1>🕯️ חברת משניות</h1>
+        <p>שע"י איגוד מוסדות ויזניץ</p>
     </div>
 
     <div class="toolbar">
@@ -359,9 +387,9 @@
             ➕ הוסף נפטר חדש
         </button>
         <button class="btn btn-secondary" onclick="fetchRecords(true)">
-            🔄 רענן רשימה
+            🔄 רענן נתונים
         </button>
-        <input type="text" class="search-input" id="searchInput" placeholder="🔍 חפש לפי שם, משפחה, תאריך..." onkeyup="filterRecords()">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 חיפוש לפי שם משפחה, תאריך או כל מידע אחר..." onkeyup="filterRecords()">
     </div>
 
     <div id="errorContainer"></div>
@@ -371,26 +399,24 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 80px;">#</th>
-                        <th>משפחה מונצח</th>
-                        <th>שם המונצח</th>
-                        <th>יחס</th>
-                        <th>יאהרצייט (עברי)</th>
-                        <th style="width: 120px;">פעולות</th>
+                        <th>מס׳</th>
+                        <th>שם משפחת המנוח</th>
+                        <th>יום היאהרצייט (עברי)</th>
+                        <th>פעולות</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="6" class="loading-row">
+                        <td colspan="4" class="loading-row">
                             <div class="spinner"></div>
-                            <p>טוען נתונים...</p>
+                            <p>טוען רשימת נפטרים...</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
             <div id="loadMore" class="load-more" style="display: none;">
                 <div class="spinner"></div>
-                <p>טוען עוד רשומות...</p>
+                <p>טוען רשומות נוספות...</p>
             </div>
         </div>
     </div>
@@ -521,9 +547,9 @@
                 displayedRecords = [];
                 nextOffset = null;
                 document.getElementById('tableBody').innerHTML = `
-                    <tr><td colspan="6" class="loading-row">
+                    <tr><td colspan="4" class="loading-row">
                         <div class="spinner"></div>
-                        <p>טוען נתונים...</p>
+                        <p>טוען רשימת נפטרים...</p>
                     </td></tr>
                 `;
             } else {
@@ -565,7 +591,7 @@
             }
 
             if (allRecords.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><div style="font-size: 48px; margin-bottom: 16px;">📋</div><h3>אין רשומות</h3><p>לחץ על "הוסף נפטר חדש" כדי להתחיל</p></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div style="font-size: 56px; margin-bottom: 20px;">📋</div><h3>אין רשומות במערכת</h3><p style="margin-top: 12px;">לחץ על "הוסף נפטר חדש" כדי להוסיף רשומה ראשונה</p></td></tr>';
                 return;
             }
 
@@ -580,14 +606,12 @@
 
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td><strong>${record.fields['#'] || '-'}</strong></td>
+                    <td>${record.fields['#'] || '-'}</td>
                     <td><strong>${record.fields['משפחה_מונצח'] || '-'}</strong></td>
-                    <td>${record.fields['שם_המונצח'] || '-'}</td>
-                    <td>${record.fields['יחס'] || '-'}</td>
                     <td>${yahrtzeit || '-'}</td>
                     <td>
-                        <button class="icon-btn" onclick="editRecord('${record.id}')" title="ערוך">✏️</button>
-                        <button class="icon-btn" onclick="deleteRecord('${record.id}')" title="מחק">🗑️</button>
+                        <button class="icon-btn" onclick="editRecord('${record.id}')" title="ערוך פרטים">✏️</button>
+                        <button class="icon-btn" onclick="deleteRecord('${record.id}')" title="מחק רשומה">🗑️</button>
                     </td>
                 `;
             });
@@ -636,7 +660,7 @@
             const record = allRecords.find(r => r.id === recordId);
             if (!record) return;
 
-            document.getElementById('modalTitle').textContent = 'ערוך פרטי נפטר';
+            document.getElementById('modalTitle').textContent = 'עריכת פרטי נפטר';
             const form = document.getElementById('recordForm');
 
             form.reset();
