@@ -3,339 +3,754 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת CRM - Airtable</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>מערכת CRM - חברת משניות</title>
     <style>
-        /* CSS בסיסי (כפי הנראה שהיה קיים) */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F5F5F5; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .sidebar { background-color: #343a40; min-height: 100vh; padding-top: 20px; color: white; }
-        .sidebar a { color: #adb5bd; padding: 10px 15px; display: block; text-decoration: none; border-radius: 5px; margin-bottom: 5px; }
-        .sidebar a:hover, .sidebar a.active { background-color: #495057; color: white; }
-        .content { padding: 30px; }
-        .table th, .table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
-        .modal.show { display: block; background: rgba(0,0,0,0.5); }
-        .modal-dialog { max-width: 800px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Heebo', sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            padding: 28px 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            opacity: 0.95;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 40px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn {
+            padding: 11px 22px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+            box-shadow: 0 2px 4px rgba(74, 144, 226, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: #357abd;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .search-input {
+            flex: 1;
+            max-width: 450px;
+            padding: 11px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        /* Table */
+        .table-wrapper {
+            background: white;
+            margin: 32px 40px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-container {
+            max-height: calc(100vh - 300px);
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            z-index: 10;
+            box-shadow: 0 1px 0 #e2e8f0;
+        }
+
+        th {
+            padding: 18px 24px;
+            text-align: right;
+            font-weight: 700;
+            color: #1a202c;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+
+        th:first-child {
+            width: 350px;
+            text-align: right;
+        }
+
+        th:last-child {
+            width: 140px;
+            text-align: center;
+        }
+
+        td {
+            padding: 18px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #4a5568;
+        }
+
+        td:first-child {
+            text-align: center;
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        td:last-child {
+            text-align: center;
+        }
+
+        tbody tr {
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .icon-btn {
+            padding: 7px 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 17px;
+            opacity: 0.6;
+            transition: all 0.2s;
+            border-radius: 6px;
+        }
+
+        .icon-btn:hover {
+            opacity: 1;
+            background: #edf2f7;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            padding: 26px 36px;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            font-size: 32px;
+            cursor: pointer;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+            background: none;
+            border: none;
+            color: white;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            opacity: 1;
+        }
+
+        .modal-body {
+            padding: 36px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .form-section {
+            margin-bottom: 36px;
+        }
+
+        .form-section-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+            margin-bottom: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #4a5568;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            background: #f8fafc;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4a90e2;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .modal-footer {
+            padding: 22px 36px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Loading & Empty States */
+        .loading-row, .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #718096;
+        }
+
+        .spinner {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #4a90e2;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .load-more {
+            text-align: center;
+            padding: 28px;
+            color: #718096;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #742a2a;
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin: 20px 40px;
+            border-right: 4px solid #fc8181;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-input {
+                max-width: 100%;
+            }
+            
+            .header, .toolbar, .table-wrapper {
+                margin: 16px;
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="d-flex">
-        <div class="sidebar d-none d-md-block">
-            <h4 class="text-center mb-4">מערכת CRM</h4>
-            <a href="#" class="active">רשימת שמות</a>
-            <a href="#">דוחות</a>
-            <a href="#">הגדרות</a>
-        </div>
-        
-        <div class="content flex-grow-1">
-            <header class="header mb-4">
-                <h1>רשימת שמות</h1>
-                <p>ניהול כללי עם אפשרויות עריכה, הוספה ומחיקה.</p>
-            </header>
-
-            <div class="card p-4 shadow-sm">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <button id="addNewRecord" class="btn btn-success">הוסף רשומה חדשה</button>
-                    <div class="input-group w-auto">
-                        <input type="text" id="searchInput" class="form-control" placeholder="חפש...">
-                        <span class="input-group-text"><i class="fas fa-search">🔍</i></span>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>שם המונצח</th>
-                                <th>שם משפחה מונצח</th>
-                                <th>טלפון</th>
-                                <th>הערות</th>
-                                <th class="text-center">פעולות</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            </tbody>
-                    </table>
-                </div>
-
-                <div id="loadingIndicator" class="text-center mt-3" style="display:none;">טוען...</div>
-
-                </div>
-        </div>
+    <div class="header">
+        <h1>🕯️ חברת משניות</h1>
+        <p>שע"י איגוד מוסדות ויזניץ</p>
     </div>
 
-    <div class="modal" id="recordModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">הוספת רשומה חדשה</h5>
-                    <button type="button" class="btn-close" onclick="closeModal()" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="recordForm">
-                        <div class="mb-3">
-                            <label for="recordId" class="form-label"># (מזהה רשומה - מ-Airtable)</label>
-                            <input type="text" class="form-control" id="recordId" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="recordName" class="form-label">שם המונצח</label>
-                            <input type="text" class="form-control" id="recordName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="recordFamilyName" class="form-label">שם משפחה מונצח</label>
-                            <input type="text" class="form-control" id="recordFamilyName">
-                        </div>
-                        <div class="mb-3">
-                            <label for="recordPhone" class="form-label">טלפון</label>
-                            <input type="tel" class="form-control" id="recordPhone">
-                        </div>
-                        <div class="mb-3">
-                            <label for="recordNotes" class="form-label">הערות</label>
-                            <textarea class="form-control" id="recordNotes"></textarea>
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="button" class="btn btn-secondary me-2" onclick="closeModal()">בטל</button>
-                            <button type="submit" class="btn btn-primary">שמור שינויים</button>
-                        </div>
-                    </form>
-                </div>
+    <div class="toolbar">
+        <button class="btn btn-primary" onclick="openAddModal()">
+            ➕ הוסף נפטר חדש
+        </button>
+        <button class="btn btn-secondary" onclick="fetchRecords(true)">
+            🔄 רענן נתונים
+        </button>
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 חיפוש לפי שם משפחה, תאריך או כל מידע אחר..." onkeyup="filterRecords()">
+    </div>
+
+    <div id="errorContainer"></div>
+
+    <div class="table-wrapper">
+        <div class="table-container" id="tableWrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>מס׳</th>
+                        <th>שם משפחת המנוח</th>
+                        <th>יום היאהרצייט (עברי)</th>
+                        <th>פעולות</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="4" class="loading-row">
+                            <div class="spinner"></div>
+                            <p>טוען רשימת נפטרים...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="loadMore" class="load-more" style="display: none;">
+                <div class="spinner"></div>
+                <p>טוען רשומות נוספות...</p>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Modal -->
+    <div id="recordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modalTitle">הוסף נפטר חדש</span>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="recordForm">
+                    <!-- פרטי הנפטר -->
+                    <div class="form-section">
+                        <div class="form-section-title">📝 פרטי הנפטר</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>משפחה מונצח *</label>
+                                <input type="text" name="משפחה_מונצח" required>
+                            </div>
+                            <div class="form-group">
+                                <label>שם המונצח *</label>
+                                <input type="text" name="שם_המונצח" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>יחס</label>
+                                <input type="text" name="יחס" placeholder="בן, בת, אח, אחות...">
+                            </div>
+                            <div class="form-group">
+                                <label>אב המונצח</label>
+                                <input type="text" name="אב_מונצח">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>תואר לפני המונצח</label>
+                                <input type="text" name="תואר_לפני_מונצח" placeholder="הרב, מר, גב'...">
+                            </div>
+                            <div class="form-group">
+                                <label>תואר אחרי המונצח</label>
+                                <input type="text" name="תואר_אחרי_מונצח" placeholder="ז''ל, זצ''ל...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- תאריך פטירה -->
+                    <div class="form-section">
+                        <div class="form-section-title">📅 תאריך פטירה ויאהרצייט</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>יום (עברי)</label>
+                                <input type="text" name="יום" placeholder="כ''ג">
+                            </div>
+                            <div class="form-group">
+                                <label>חודש יאהרצייט</label>
+                                <input type="text" name="חודש_יאהרצייט" placeholder="אדר, ניסן, תשרי...">
+                            </div>
+                            <div class="form-group">
+                                <label>שנה (עברית)</label>
+                                <input type="text" name="שנה" placeholder="תשפ''ד">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>תאריך פטירה (לועזי)</label>
+                                <input type="date" name="תאריך_פטירה">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- פרטי קשר -->
+                    <div class="form-section">
+                        <div class="form-section-title">📞 פרטי קשר</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>כתובת</label>
+                                <input type="text" name="כתובת" placeholder="רחוב ומספר בית">
+                            </div>
+                            <div class="form-group">
+                                <label>ישוב</label>
+                                <input type="text" name="ישוב" placeholder="עיר או יישוב">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>טלפון</label>
+                                <input type="tel" name="טלפון" placeholder="02-1234567">
+                            </div>
+                            <div class="form-group">
+                                <label>טלפון נייד</label>
+                                <input type="tel" name="טלפון_נייד" placeholder="050-1234567">
+                            </div>
+                            <div class="form-group">
+                                <label>אימייל</label>
+                                <input type="email" name="אימייל" placeholder="example@email.com">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">ביטול</button>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('recordForm').requestSubmit()">💾 שמור</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // *** משתנים גלובליים ***
-        let isLoading = false;
+        let allRecords = [];
+        let displayedRecords = [];
         let editingRecordId = null;
-        let allRecords = []; // המערך הראשי שמכיל את כל הרשומות שנטענו
-        let isFiltering = false; 
+        let nextOffset = null;
+        let isLoading = false;
+        let isFiltering = false;
 
-        // *** פונקציות עזר ***
-
-        function formatRecords(records) {
-            return records.map(record => ({
-                id: record.id,
-                fields: record.fields
-            }));
-        }
-        
-        // פונקציה לפתיחת המודל
-        function openModal() {
-            document.getElementById('recordModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        // פונקציה לסגירת המודל
-        function closeModal() {
-            document.getElementById('recordModal').classList.remove('show');
-            document.body.style.overflow = 'auto';
-            document.getElementById('recordForm').reset();
-            // **תיקון קריטי 1: איפוס ה-ID לאחר סגירת המודל**
-            editingRecordId = null; 
-        }
-
-        // *** פונקציית טעינה (כעת טוענת הכל) ***
+        const API_URL = '/.netlify/functions/airtable';
 
         async function fetchRecords(reset = false) {
-            if (isLoading) return;
-            
+            if (isLoading || (!reset && nextOffset === null && allRecords.length > 0)) return;
+
             isLoading = true;
-            document.getElementById('loadingIndicator').style.display = 'block';
 
             if (reset) {
                 allRecords = [];
-                document.getElementById('tableBody').innerHTML = ''; 
+                displayedRecords = [];
+                nextOffset = null;
+                document.getElementById('tableBody').innerHTML = `
+                    <tr><td colspan="4" class="loading-row">
+                        <div class="spinner"></div>
+                        <p>טוען רשימת נפטרים...</p>
+                    </td></tr>
+                `;
+            } else {
+                document.getElementById('loadMore').style.display = 'block';
             }
 
-            // הקריאה כעת אינה מכילה offset, שכן ה-Backend משתמש ב-all()
-            let url = '/.netlify/functions/airtable'; 
-            
+            document.getElementById('errorContainer').innerHTML = '';
+
             try {
+                let url = API_URL;
+                if (nextOffset && !reset) {
+                    url += `?offset=${nextOffset}`;
+                }
+
                 const response = await fetch(url);
                 const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'שגיאה כללית בטעינת נתונים');
-                }
 
-                const newRecords = formatRecords(data.records);
-                
-                // **שמירת כל הרשומות במערך המאסטר**
-                allRecords = newRecords; 
+                if (!response.ok) throw new Error(data.error || 'שגיאה בטעינת הנתונים');
 
-                // הצגת הרשומות הנטענות
-                displayRecords(allRecords, true); // הצג את כל הרשומות
+                allRecords = [...allRecords, ...data.records];
+                nextOffset = data.offset || null;
+
+                displayRecords(data.records, reset);
 
             } catch (error) {
-                console.error("שגיאה בטעינת נתונים מ-Airtable:", error);
-                document.getElementById('loadingIndicator').innerText = 'שגיאה בטעינת נתונים.';
+                showError('שגיאה בטעינת הנתונים: ' + error.message);
             } finally {
                 isLoading = false;
-                if (document.getElementById('loadingIndicator').innerText === 'טוען...') {
-                    document.getElementById('loadingIndicator').style.display = 'none';
-                }
+                document.getElementById('loadMore').style.display = 'none';
             }
         }
 
-        // *** פונקציית הצגת נתונים ***
-
-        function displayRecords(recordsToDisplay, reset) {
+        function displayRecords(records, reset) {
             const tbody = document.getElementById('tableBody');
 
             if (reset) {
                 tbody.innerHTML = '';
+                displayedRecords = [];
             }
-            
-            if (recordsToDisplay.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6">לא נמצאו רשומות.</td></tr>';
+
+            if (allRecords.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div style="font-size: 56px; margin-bottom: 20px;">📋</div><h3>אין רשומות במערכת</h3><p style="margin-top: 12px;">לחץ על "הוסף נפטר חדש" כדי להוסיף רשומה ראשונה</p></td></tr>';
                 return;
             }
 
-            recordsToDisplay.forEach(record => {
-                const row = tbody.insertRow();
-                row.setAttribute('data-id', record.id);
+            records.forEach(record => {
+                displayedRecords.push(record);
                 
-                // ודא ששמות השדות בתוך record.fields תואמים בדיוק לשמות השדות ב-Airtable!
+                const yahrtzeit = [
+                    record.fields['יום'] || '',
+                    record.fields['חודש_יאהרצייט'] || '',
+                    record.fields['שנה'] || ''
+                ].filter(Boolean).join(' ');
+
+                const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td>${record.fields['#'] || ''}</td>
-                    <td>${record.fields['שם המונצח'] || ''}</td>
-                    <td>${record.fields['שם משפחה מונצח'] || ''}</td>
-                    <td>${record.fields['טלפון'] || ''}</td>
-                    <td>${record.fields['הערות'] || ''}</td>
-                    <td class="text-center">
-                        <button onclick="editRecord('${record.id}')" class="btn btn-warning btn-sm">ערוך</button>
-                        <button onclick="deleteRecord('${record.id}')" class="btn btn-danger btn-sm">מחק</button>
+                    <td>${record.fields['#'] || '-'}</td>
+                    <td><strong>${record.fields['משפחה_מונצח'] || '-'}</strong></td>
+                    <td>${yahrtzeit || '-'}</td>
+                    <td>
+                        <button class="icon-btn" onclick="editRecord('${record.id}')" title="ערוך פרטים">✏️</button>
+                        <button class="icon-btn" onclick="deleteRecord('${record.id}')" title="מחק רשומה">🗑️</button>
                     </td>
                 `;
             });
         }
 
-        // *** פונקציות עריכה ומחיקה ***
+        const tableWrapper = document.getElementById('tableWrapper');
+        tableWrapper.addEventListener('scroll', () => {
+            if (isFiltering || isLoading) return;
 
-        function editRecord(id) {
-            const record = allRecords.find(r => r.id === id);
-            if (record) {
-                editingRecordId = id;
-                document.getElementById('modalTitle').innerText = 'עריכת רשומה';
-                document.getElementById('recordId').value = record.fields['#'] || '';
-                document.getElementById('recordName').value = record.fields['שם המונצח'] || '';
-                document.getElementById('recordFamilyName').value = record.fields['שם משפחה מונצח'] || '';
-                document.getElementById('recordPhone').value = record.fields['טלפון'] || '';
-                document.getElementById('recordNotes').value = record.fields['הערות'] || '';
-                openModal();
+            // בדיקה אם הגענו לתחתית
+            const scrollTop = tableWrapper.scrollTop;
+            const scrollHeight = tableWrapper.scrollHeight;
+            const clientHeight = tableWrapper.clientHeight;
+            
+            // כאשר נשארו פחות מ-50 פיקסלים לתחתית - טען עוד
+            if (scrollTop + clientHeight >= scrollHeight - 50) {
+                if (nextOffset !== null) {
+                    fetchRecords(false);
+                }
             }
-        }
-
-        async function deleteRecord(id) {
-            if (!confirm('האם אתה בטוח שברצונך למחוק רשומה זו?')) return;
-
-            try {
-                const response = await fetch(`/.netlify/functions/airtable?id=${id}`, {
-                    method: 'DELETE',
-                });
-                if (!response.ok) throw new Error('שגיאה במחיקת הרשומה');
-
-                // הסר את הרשומה מהמערך המקומי
-                allRecords = allRecords.filter(r => r.id !== id);
-                
-                // הצג את הרשומות המעודכנות
-                displayRecords(allRecords, true); 
-
-            } catch (error) {
-                alert(`שגיאה במחיקה: ${error.message}`);
-            }
-        }
-
-        // *** לוגיקת סינון ***
+        });
         
+        // גם בדוק כל 2 שניות אם יש צורך לטעון עוד (למקרה שהתוכן קצר)
+        setInterval(() => {
+            if (isFiltering || isLoading) return;
+            
+            const tableWrapper = document.getElementById('tableWrapper');
+            const scrollTop = tableWrapper.scrollTop;
+            const scrollHeight = tableWrapper.scrollHeight;
+            const clientHeight = tableWrapper.clientHeight;
+            
+            // אם אין גלילה בכלל (כל התוכן נראה) וי מש offset - טען עוד
+            if (scrollHeight <= clientHeight + 10 && nextOffset !== null) {
+                fetchRecords(false);
+            }
+        }, 2000);
+
         function filterRecords() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
             if (searchTerm.length > 0) {
                 isFiltering = true;
-
                 const filtered = allRecords.filter(record => {
-                    const name = record.fields['שם המונצח'] || '';
-                    const familyName = record.fields['שם משפחה מונצח'] || '';
-                    const phone = record.fields['טלפון'] || '';
-                    
-                    return name.toLowerCase().includes(searchTerm) ||
-                           familyName.toLowerCase().includes(searchTerm) ||
-                           phone.includes(searchTerm);
+                    return Object.values(record.fields).some(value =>
+                        String(value || '').toLowerCase().includes(searchTerm)
+                    );
                 });
-                
                 displayRecords(filtered, true);
             } else {
                 isFiltering = false;
-                
-                // הצגת כל רשומות המאסטר שנטענו
-                displayRecords(allRecords, true); 
+                displayRecords(allRecords, true);
             }
         }
 
-        // *** אתחול (מטפל בשגיאת המסך הלבן) ***
+        function openAddModal() {
+            editingRecordId = null;
+            document.getElementById('modalTitle').textContent = 'הוסף נפטר חדש';
+            document.getElementById('recordForm').reset();
+            document.getElementById('recordModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // טען את כל הרשומות בטעינה ראשונית (reset=true)
-            fetchRecords(true); 
+        function editRecord(recordId) {
+            editingRecordId = recordId;
+            const record = allRecords.find(r => r.id === recordId);
+            if (!record) return;
 
-            // **קישור כפתור "הוסף רשומה חדשה"**
-            document.getElementById('addNewRecord').addEventListener('click', () => {
-                document.getElementById('modalTitle').innerText = 'הוספת רשומה חדשה';
-                editingRecordId = null; 
-                document.getElementById('recordForm').reset();
-                openModal();
+            document.getElementById('modalTitle').textContent = 'עריכת פרטי נפטר';
+            const form = document.getElementById('recordForm');
+
+            form.reset();
+            Object.keys(record.fields).forEach(fieldName => {
+                const input = form.querySelector(`[name="${fieldName}"]`);
+                if (input) input.value = record.fields[fieldName] || '';
             });
 
-            // **קישור הטופס (Submit)**
-            document.getElementById('recordForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const recordId = document.getElementById('recordId').value;
-                const name = document.getElementById('recordName').value;
-                const familyName = document.getElementById('recordFamilyName').value;
-                const phone = document.getElementById('recordPhone').value;
-                const notes = document.getElementById('recordNotes').value;
+            document.getElementById('recordModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
 
-                const fields = {
-                    '#': recordId,
-                    'שם המונצח': name,
-                    'שם משפחה מונצח': familyName,
-                    'טלפון': phone,
-                    'הערות': notes,
-                };
+        function closeModal() {
+            document.getElementById('recordModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
 
+        document.getElementById('recordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const fields = {};
+
+            for (let [key, value] of formData.entries()) {
+                if (value) fields[key] = value;
+            }
+
+            try {
                 const method = editingRecordId ? 'PATCH' : 'POST';
-                let url = '/.netlify/functions/airtable';
-                if (editingRecordId) {
-                    url += `?id=${editingRecordId}`;
-                }
-                
-                try {
-                    const response = await fetch(url, {
-                        method: method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ fields }),
-                    });
+                const url = editingRecordId ? `${API_URL}?id=${editingRecordId}` : API_URL;
 
-                    if (!response.ok) throw new Error('שגיאה בשמירת הרשומה');
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fields })
+                });
 
-                    closeModal();
-                    // **תיקון קריטי 2: איפוס ה-ID לאחר שמירה מוצלחת**
-                    editingRecordId = null; 
-                    
-                    // טען מחדש את כל הנתונים מההתחלה כדי לקבל את הרשומה החדשה/המעודכנת
-                    await fetchRecords(true);
-                } catch (error) {
-                    alert(`שגיאה בשמירה: ${error.message}`);
-                }
-            });
-            
-            // **קישור שדה החיפוש**
-            document.getElementById('searchInput').addEventListener('input', filterRecords);
+                if (!response.ok) throw new Error('שגיאה בשמירת הרשומה');
+
+                closeModal();
+                await fetchRecords(true);
+            } catch (error) {
+                showError('שגיאה בשמירת הרשומה: ' + error.message);
+            }
         });
+
+        async function deleteRecord(recordId) {
+            if (!confirm('האם אתה בטוח שברצונך למחוק רשומה זו?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}?id=${recordId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('שגיאה במחיקת הרשומה');
+
+                await fetchRecords(true);
+            } catch (error) {
+                showError('שגיאה במחיקת הרשומה: ' + error.message);
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('errorContainer').innerHTML = `
+                <div class="error-message">${message}</div>
+            `;
+        }
+
+        fetchRecords(true);
     </script>
 </body>
 </html>
