@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת CRM - Airtable</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .toolbar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-secondary {
+            background: #718096;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f7fafc;
+        }
+
+        th {
+            padding: 16px;
+            text-align: right;
+            font-weight: 600;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+        }
+
+        tbody tr {
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            padding: 8px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .icon-btn:hover {
+            background: #edf2f7;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #718096;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #742a2a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 מערכת CRM - רשימת שמות</h1>
+        <p>ניהול מלא עם אפשרות עריכה, הוספה ומחיקה</p>
+    </div>
+
+    <div class="container">
+        <div class="toolbar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 חפש..." onkeyup="filterRecords()">
+            </div>
+            <button class="btn btn-primary" onclick="fetchRecords()">
+                🔄 רענן
+            </button>
+            <button class="btn btn-success" onclick="openAddModal()">
+                ➕ הוסף רשומה
+            </button>
+        </div>
+
+        <div id="errorContainer"></div>
+
+        <div class="table-container">
+            <div id="loadingState" class="loading">
+                <div class="spinner"></div>
+                <p>טוען נתונים...</p>
+            </div>
+
+            <div id="tableContent" style="display: none;">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>פעולות</th>
+                                <th>משפחה מונצח</th>
+                                <th>אב הזוגיות</th>
+                                <th>שם התמונה</th>
+                                <th>יחס</th>
+                                <th>טלפון</th>
+                                <th>ישוב</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="emptyState" style="display: none;" class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                </svg>
+                <h3>אין רשומות</h3>
+                <p>לחץ על "הוסף רשומה" כדי להתחיל</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit -->
+    <div id="recordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">הוסף רשומה חדשה</div>
+            <form id="recordForm">
+                <div class="form-group">
+                    <label>משפחה מונצח</label>
+                    <input type="text" name="משפחה_מונצח">
+                </div>
+                <div class="form-group">
+                    <label>אב הזוגיות</label>
+                    <input type="text" name="אב_הזוגיות">
+                </div>
+                <div class="form-group">
+                    <label>שם התמונה</label>
+                    <input type="text" name="שם_התמונה">
+                </div>
+                <div class="form-group">
+                    <label>יחס</label>
+                    <input type="text" name="יחס">
+                </div>
+                <div class="form-group">
+                    <label>טלפון</label>
+                    <input type="text" name="טלפון">
+                </div>
+                <div class="form-group">
+                    <label>ישוב</label>
+                    <input type="text" name="ישוב">
+                </div>
+                <div class="form-group">
+                    <label>טלפון נייד</label>
+                    <input type="text" name="טלפון נייד">
+                </div>
+                <div class="form-group">
+                    <label>אימייל</label>
+                    <input type="email" name="אימייל">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">ביטול</button>
+                    <button type="submit" class="btn btn-success">💾 שמור</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allRecords = [];
+        let editingRecordId = null;
+
+        // Replace with your Netlify function URL after deployment
+        const API_URL = '/.netlify/functions/airtable';
+
+        async function fetchRecords() {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('tableContent').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('errorContainer').innerHTML = '';
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || 'שגיאה בטעינת הנתונים');
+                
+                allRecords = data.records;
+                displayRecords(allRecords);
+            } catch (error) {
+                showError('שגיאה בטעינת הנתונים: ' + error.message);
+                document.getElementById('loadingState').style.display = 'none';
+            }
+        }
+
+        function displayRecords(records) {
+            document.getElementById('loadingState').style.display = 'none';
+            
+            if (records.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('tableContent').style.display = 'block';
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            records.forEach(record => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>
+                        <div class="actions">
+                            <button class="icon-btn" onclick="editRecord('${record.id}')" title="ערוך">✏️</button>
+                            <button class="icon-btn" onclick="deleteRecord('${record.id}')" title="מחק">🗑️</button>
+                        </div>
+                    </td>
+                    <td>${record.fields['משפחה_מונצח'] || '-'}</td>
+                    <td>${record.fields['אב_הזוגיות'] || '-'}</td>
+                    <td>${record.fields['שם_התמונה'] || '-'}</td>
+                    <td>${record.fields['יחס'] || '-'}</td>
+                    <td>${record.fields['טלפון'] || '-'}</td>
+                    <td>${record.fields['ישוב'] || '-'}</td>
+                `;
+            });
+        }
+
+        function filterRecords() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allRecords.filter(record => {
+                return Object.values(record.fields).some(value => 
+                    String(value).toLowerCase().includes(searchTerm)
+                );
+            });
+            displayRecords(filtered);
+        }
+
+        function openAddModal() {
+            editingRecordId = null;
+            document.getElementById('modalTitle').textContent = 'הוסף רשומה חדשה';
+            document.getElementById('recordForm').reset();
+            document.getElementById('recordModal').classList.add('show');
+        }
+
+        function editRecord(recordId) {
+            editingRecordId = recordId;
+            const record = allRecords.find(r => r.id === recordId);
+            
+            document.getElementById('modalTitle').textContent = 'ערוך רשומה';
+            const form = document.getElementById('recordForm');
+            
+            Object.keys(record.fields).forEach(fieldName => {
+                const input = form.querySelector(`[name="${fieldName}"]`);
+                if (input) input.value = record.fields[fieldName] || '';
+            });
+            
+            document.getElementById('recordModal').classList.add('show');
+        }
+
+        async function deleteRecord(recordId) {
+            if (!confirm('האם אתה בטוח שברצונך למחוק רשומה זו?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}?id=${recordId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('שגיאה במחיקת הרשומה');
+
+                await fetchRecords();
+            } catch (error) {
+                showError('שגיאה במחיקת הרשומה: ' + error.message);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('recordModal').classList.remove('show');
+        }
+
+        document.getElementById('recordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const fields = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (value) fields[key] = value;
+            }
+
+            try {
+                const method = editingRecordId ? 'PATCH' : 'POST';
+                const url = editingRecordId ? `${API_URL}?id=${editingRecordId}` : API_URL;
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fields })
+                });
+
+                if (!response.ok) throw new Error('שגיאה בשמירת הרשומה');
+
+                closeModal();
+                await fetchRecords();
+            } catch (error) {
+                showError('שגיאה בשמירת הרשומה: ' + error.message);
+            }
+        });
+
+        function showError(message) {
+            document.getElementById('errorContainer').innerHTML = `
+                <div class="error-message">${message}</div>
+            `;
+        }
+
+        // Load records on page load
+        fetchRecords();
+    </script>
+</body>
+</html>
