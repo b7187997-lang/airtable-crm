@@ -382,8 +382,8 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="משפחה_מוצבת">משפחה מוצבת</label>
-                        <input type="text" name="משפחה_מוצבת" id="משפחה_מוצבת">
+                        <label for="משפחה_מונצח">משפחה מונצח</label>
+                        <input type="text" name="משפחה_מונצח" id="משפחה_מונצח">
                     </div>
                     <div class="form-group">
                         <label for="שם_המוצבת">שם המוצבת</label>
@@ -500,7 +500,8 @@
         
         // הגדרת השדות לשימוש ב-Detail View
         const DETAIL_FIELDS = [
-            { label: 'משפחה מוצבת', key: 'משפחה_מוצבת' },
+            // *** שם שדה תוקן ל: משפחה_מונצח ***
+            { label: 'משפחה מונצח', key: 'משפחה_מונצח' }, 
             { label: 'שם המוצבת', key: 'שם_המוצבת' },
             { label: 'יחס', key: 'יחס' },
             { label: 'אב המוצבת', key: 'אב_המוצבת' },
@@ -517,25 +518,21 @@
             { label: 'אימייל', key: 'אימייל' }
         ];
 
-        // *** פונקציית טעינת רשומות מעודכנת עם פגינציה (Pagination) ***
+        // *** פונקציית טעינת רשומות (Netlify Function מטפל בפגינציה) ***
         async function fetchRecords() {
             document.getElementById('loadingState').style.display = 'block';
             document.getElementById('tableContent').style.display = 'none';
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('errorContainer').innerHTML = '';
-
-            let offset = null;
-            let fetchedRecords = [];
             
             try {
-                // לולאה שממשיכה לשלוף רשומות כל עוד קיים 'offset' (כלומר, יש עוד דפים)
-                // שימו לב: ה-index.html פשוט מבקש נתונים, הפגינציה מתבצעת כעת ב-airtable.js
+                // ה-index.html פשוט מבקש נתונים, ה-Netlify Function מחזיר את הכל.
                 const response = await fetch(API_URL);
                 const data = await response.json();
                 
                 if (!response.ok) throw new Error(data.error || 'שגיאה בטעינת הנתונים');
                 
-                allRecords = data.records; // ה-Netlify Function מחזיר כבר את כל הרשומות
+                allRecords = data.records; 
                 displayRecords(allRecords);
 
             } catch (error) {
@@ -558,17 +555,17 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            records.forEach((record, index) => { // *** שימו לב: הוספתי את index ***
+            records.forEach((record, index) => {
                 const row = tbody.insertRow();
                 
                 // **הוספת אירוע לחיצה על השורה**
                 row.onclick = () => showDetailView('${record.id}'); 
                 row.style.cursor = 'pointer'; 
                 
-                // *** תצוגת 3 השדות החדשים + עמודת פעולות ***
+                // *** תצוגת 3 השדות החדשים + עמודת פעולות (תיקון שמות שדות) ***
                 row.innerHTML = `
-                    <td>${index + 1}</td> 
-                    <td>${record.fields['משפחה_מוצבת'] || '-'}</td>
+                    <td>${record.fields['#'] || index + 1}</td> 
+                    <td>${record.fields['משפחה_מונצח'] || '-'}</td>
                     <td>${record.fields['יום'] || ''} ${record.fields['חודש_יאראצייט'] || ''} ${record.fields['שנה'] || ''}</td>
                     <td>
                          <button class="icon-btn" onclick="event.stopPropagation(); editRecord('${record.id}')" title="ערוך">✏️</button>
@@ -623,6 +620,7 @@
         function filterRecords() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allRecords.filter(record => {
+                // כולל בדיקה של שדות שעודכנו, כמו 'משפחה_מונצח'
                 return Object.values(record.fields).some(value => 
                     String(value).toLowerCase().includes(searchTerm)
                 );
