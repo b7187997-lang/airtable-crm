@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת CRM - Airtable</title>
+    <title>מערכת CRM - רשימת שמות</title>
     <style>
+        /* קוד ה-CSS נשאר זהה לקוד המקורי שלך */
         * {
             margin: 0;
             padding: 0;
@@ -57,7 +58,7 @@
             min-width: 250px;
         }
 
-        .search-box input {
+        .search-box input, .form-group input, .form-group select { /* הוספת select */
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e1e8ed;
@@ -66,7 +67,7 @@
             transition: all 0.3s;
         }
 
-        .search-box input:focus {
+        .search-box input:focus, .form-group input:focus, .form-group select:focus { /* הוספת select */
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -156,6 +157,7 @@
             padding: 14px 16px;
             border-bottom: 1px solid #e2e8f0;
             color: #4a5568;
+            white-space: nowrap; /* מונע שבירת שורות בטבלה */
         }
 
         tbody tr {
@@ -227,9 +229,9 @@
             background: white;
             border-radius: 12px;
             padding: 30px;
-            max-width: 600px;
+            max-width: 900px; /* הוגדל כדי להכיל יותר שדות */
             width: 90%;
-            max-height: 80vh;
+            max-height: 90vh; /* הוגדל */
             overflow-y: auto;
         }
 
@@ -251,20 +253,13 @@
             color: #4a5568;
         }
 
-        .form-group input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+        /* סגנון חדש: שדות מחולקים ל-3 עמודות בתוך הטופס */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
         }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
+        
         .modal-footer {
             display: flex;
             gap: 10px;
@@ -340,13 +335,22 @@
                         <thead>
                             <tr>
                                 <th>פעולות</th>
-                                <th>משפחה מונצח</th>
-                                <th>אב הזוגיות</th>
-                                <th>שם התמונה</th>
+                                <th>משפחה מוצבת</th>
+                                <th>שם מוצבת</th>
                                 <th>יחס</th>
+                                <th>אב מוצבת</th>
+                                <th>יום</th>
+                                <th>חודש יארצייט</th>
+                                <th>שנה</th>
+                                <th>תואר לפני מוצבת</th>
+                                <th>תואר אחרי מוצבת</th>
+                                <th>תאריך פטירה</th>
+                                <th>כתובת</th>
                                 <th>טלפון</th>
                                 <th>ישוב</th>
-                            </tr>
+                                <th>טלפון נייד</th>
+                                <th>אימייל</th>
+                                </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
                     </table>
@@ -365,42 +369,112 @@
         </div>
     </div>
 
-    <!-- Modal for Add/Edit -->
     <div id="recordModal" class="modal">
         <div class="modal-content">
             <div class="modal-header" id="modalTitle">הוסף רשומה חדשה</div>
             <form id="recordForm">
-                <div class="form-group">
-                    <label>משפחה מונצח</label>
-                    <input type="text" name="משפחה_מונצח">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="משפחה_מוצבת">משפחה מוצבת</label>
+                        <input type="text" name="משפחה_מוצבת" id="משפחה_מוצבת">
+                    </div>
+                    <div class="form-group">
+                        <label for="שם_המוצבת">שם המוצבת</label>
+                        <input type="text" name="שם_המוצבת" id="שם_המוצבת">
+                    </div>
+                    <div class="form-group">
+                        <label for="אב_המוצבת">אב המוצבת</label>
+                        <input type="text" name="אב_המוצבת" id="אב_המוצבת">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>אב הזוגיות</label>
-                    <input type="text" name="אב_הזוגיות">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="יחס">יחס</label>
+                        <select name="יחס" id="יחס">
+                            <option value="">בחר יחס</option>
+                            <option value="בן">בן</option>
+                            <option value="בת">בת</option>
+                            <option value="אח">אח</option>
+                            <option value="אחות">אחות</option>
+                            </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="יום">יום (תאריך פטירה עברי)</label>
+                        <input type="text" name="יום" id="יום" placeholder="י'ד">
+                    </div>
+                    <div class="form-group">
+                        <label for="חודש_יאראצייט">חודש יאראצייט</label>
+                        <select name="חודש_יאראצייט" id="חודש_יאראצייט">
+                            <option value="">בחר חודש</option>
+                            <option value="תשרי">תשרי</option>
+                            <option value="חשון">חשון</option>
+                            <option value="כסלו">כסלו</option>
+                            <option value="טבת">טבת</option>
+                            <option value="שבט">שבט</option>
+                            <option value="אדר">אדר</option>
+                            <option value="ניסן">ניסן</option>
+                            <option value="אייר">אייר</option>
+                            <option value="סיון">סיון</option>
+                            <option value="תמוז">תמוז</option>
+                            <option value="אב">אב</option>
+                            <option value="אלול">אלול</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>שם התמונה</label>
-                    <input type="text" name="שם_התמונה">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="שנה">שנה (פטירה עברית)</label>
+                        <input type="text" name="שנה" id="שנה" placeholder="תשס''ה">
+                    </div>
+                    <div class="form-group">
+                        <label for="תואר_לפני_מוצבת">תואר לפני מוצבת</label>
+                        <select name="תואר_לפני_מוצבת" id="תואר_לפני_מוצבת">
+                            <option value="">בחר תואר</option>
+                            <option value="י''ר">י"ר</option>
+                            <option value="מר">מר</option>
+                            <option value="גב'">גב'</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="תואר_אחרי_מוצבת">תואר אחרי מוצבת</label>
+                        <select name="תואר_אחרי_מוצבת" id="תואר_אחרי_מוצבת">
+                            <option value="">בחר תואר</option>
+                            <option value="ז''ל">ז"ל</option>
+                            <option value="ע''ה">ע"ה</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>יחס</label>
-                    <input type="text" name="יחס">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="תאריך_פטירה">תאריך פטירה (לועזי)</label>
+                        <input type="date" name="תאריך_פטירה" id="תאריך_פטירה">
+                    </div>
+                    <div class="form-group">
+                        <label for="כתובת">כתובת</label>
+                        <input type="text" name="כתובת" id="כתובת" placeholder="עלי הכהן 30">
+                    </div>
+                    <div class="form-group">
+                        <label for="ישוב">ישוב</label>
+                        <input type="text" name="ישוב" id="ישוב" placeholder="ירושלים">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>טלפון</label>
-                    <input type="text" name="טלפון">
-                </div>
-                <div class="form-group">
-                    <label>ישוב</label>
-                    <input type="text" name="ישוב">
-                </div>
-                <div class="form-group">
-                    <label>טלפון נייד</label>
-                    <input type="text" name="טלפון נייד">
-                </div>
-                <div class="form-group">
-                    <label>אימייל</label>
-                    <input type="email" name="אימייל">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="טלפון">טלפון</label>
+                        <input type="text" name="טלפון" id="טלפון">
+                    </div>
+                    <div class="form-group">
+                        <label for="טלפון_נייד">טלפון נייד</label>
+                        <input type="text" name="טלפון_נייד" id="טלפון_נייד">
+                    </div>
+                    <div class="form-group">
+                        <label for="אימייל">אימייל</label>
+                        <input type="email" name="אימייל" id="אימייל">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">ביטול</button>
@@ -451,6 +525,7 @@
 
             records.forEach(record => {
                 const row = tbody.insertRow();
+                // עדכון 3: בניית שורת טבלה עם כל 15 השדות החדשים
                 row.innerHTML = `
                     <td>
                         <div class="actions">
@@ -458,12 +533,21 @@
                             <button class="icon-btn" onclick="deleteRecord('${record.id}')" title="מחק">🗑️</button>
                         </div>
                     </td>
-                    <td>${record.fields['משפחה_מונצח'] || '-'}</td>
-                    <td>${record.fields['אב_הזוגיות'] || '-'}</td>
-                    <td>${record.fields['שם_התמונה'] || '-'}</td>
+                    <td>${record.fields['משפחה_מוצבת'] || '-'}</td>
+                    <td>${record.fields['שם_המוצבת'] || '-'}</td>
                     <td>${record.fields['יחס'] || '-'}</td>
+                    <td>${record.fields['אב_המוצבת'] || '-'}</td>
+                    <td>${record.fields['יום'] || '-'}</td>
+                    <td>${record.fields['חודש_יאראצייט'] || '-'}</td>
+                    <td>${record.fields['שנה'] || '-'}</td>
+                    <td>${record.fields['תואר_לפני_מוצבת'] || '-'}</td>
+                    <td>${record.fields['תואר_אחרי_מוצבת'] || '-'}</td>
+                    <td>${record.fields['תאריך_פטירה'] ? new Date(record.fields['תאריך_פטירה']).toLocaleDateString('he-IL') : '-'}</td>
+                    <td>${record.fields['כתובת'] || '-'}</td>
                     <td>${record.fields['טלפון'] || '-'}</td>
                     <td>${record.fields['ישוב'] || '-'}</td>
+                    <td>${record.fields['טלפון_נייד'] || '-'}</td>
+                    <td>${record.fields['אימייל'] || '-'}</td>
                 `;
             });
         }
@@ -471,6 +555,7 @@
         function filterRecords() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allRecords.filter(record => {
+                // בדיקת החיפוש מתבצעת על כל שדות הרשומה
                 return Object.values(record.fields).some(value => 
                     String(value).toLowerCase().includes(searchTerm)
                 );
@@ -492,6 +577,7 @@
             document.getElementById('modalTitle').textContent = 'ערוך רשומה';
             const form = document.getElementById('recordForm');
             
+            // עדכון: הפונקציה כבר מקבלת את השם משדה ה-name, כך שאין צורך לעדכן כאן
             Object.keys(record.fields).forEach(fieldName => {
                 const input = form.querySelector(`[name="${fieldName}"]`);
                 if (input) input.value = record.fields[fieldName] || '';
@@ -523,10 +609,14 @@
         document.getElementById('recordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // השימוש ב-FormData והלולאה הקיימת כבר משרת את כל השדות החדשים
+            // וזהו היתרון הגדול בשימוש ב-name לשדות הקלט במקום ID
             const formData = new FormData(e.target);
             const fields = {};
             
             for (let [key, value] of formData.entries()) {
+                // Airtable לא מקבלת שדות ריקים משדות Select או Date בצורה טובה,
+                // לכן אנו שולחים רק אם קיים ערך.
                 if (value) fields[key] = value;
             }
 
