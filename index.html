@@ -20,7 +20,7 @@
             --background-color: #edf2f7;
             --surface-color: #ffffff;
             --text-color: #2D3748;
-            --shadow-light: 6px 6px 12px rgba(0, 0, 0, 0.05); /* עמוק יותר */
+            --shadow-light: 6px 6px 12px rgba(0, 0, 0, 0.05);
             --shadow-dark: -6px -6px 12px rgba(255, 255, 255, 0.5);
         }
 
@@ -138,6 +138,11 @@
             color: white;
         }
         
+        .btn-secondary { /* כפתור ביטול/סגור */
+            background: #e2e8f0;
+            color: var(--text-color);
+        }
+        
         .btn:hover {
             transform: translateY(-1px);
             opacity: 0.95;
@@ -158,7 +163,7 @@
             transition: all 0.3s;
             background: var(--background-color);
             box-shadow: inset 3px 3px 6px rgba(0,0,0,0.1), inset -3px -3px 6px var(--surface-color);
-            direction: rtl; /* חשוב לשדה חיפוש */
+            direction: rtl; 
         }
         
         .search-box input:focus {
@@ -180,14 +185,14 @@
         }
         /* עוטף את גוף הטבלה בלבד כדי לאפשר גלילה אינסופית */
         .table-body-wrapper {
-            max-height: calc(100vh - 350px); /* גובה מקסימלי לגלילה */
-            overflow-y: scroll; /* שינוי מ-auto ל-scroll כדי לוודא גלילה */
+            max-height: calc(100vh - 350px);
+            overflow-y: scroll;
             overflow-x: auto;
         }
 
         table {
             width: 100%;
-            min-width: 800px; /* כדי לוודא שהטבלה אינה מתכווצת מדי */
+            min-width: 900px; /* הוגדל מעט לרווחה */
             border-collapse: collapse;
             font-size: 14px;
         }
@@ -202,7 +207,7 @@
             font-weight: 700;
             color: var(--text-color);
             border-bottom: 2px solid #e2e8f0;
-            position: sticky; /* הדבקת הכותרת בגלילה */
+            position: sticky;
             top: 0;
             background: #f7fafc;
             z-index: 10;
@@ -234,7 +239,7 @@
             background: #edf2f7;
         }
         
-        /* *** תיקון קריטי: טופס כרטיסיית צד נפתחת (Off-Canvas Sidebar) *** */
+        /* טופס כרטיסיית צד נפתחת (Off-Canvas Sidebar) - תיקון הסתרה */
         .side-modal {
             position: fixed;
             top: 0;
@@ -243,7 +248,6 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.4);
             z-index: 1000;
-            /* הסתרה מוחלטת כברירת מחדל */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s, visibility 0.3s;
@@ -270,7 +274,7 @@
         }
         
         .side-modal.show .side-modal-content {
-            transform: translateX(0); /* החלקה פנימה */
+            transform: translateX(0);
         }
 
         .side-modal-header {
@@ -316,7 +320,7 @@
             font-size: 15px;
             background: #f7fafc;
             transition: border-color 0.2s;
-            direction: rtl; /* חשוב לשדות קלט */
+            direction: rtl; 
         }
 
         .form-group input:focus, .form-group select:focus {
@@ -428,7 +432,7 @@
                                     <th>#</th>
                                     <th>משפחה מונצח</th>
                                     <th>שם המוצבת</th>
-                                    <th>yurtzit</th>
+                                    <th>יאראצייט (עברי)</th>
                                     <th>פעולות</th>
                                 </tr>
                             </thead>
@@ -454,7 +458,7 @@
                 <div id="emptyState" style="display: none;" class="empty-state">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 50px; height: 50px; margin-bottom: 20px;">
                         <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="3" y1="9" x2="21" x2="9"></line>
                         <line x1="9" y1="21" x2="9" y2="9"></line>
                     </svg>
                     <h3>אין רשומות</h3>
@@ -632,9 +636,8 @@
             if (isLoading || (!reset && nextOffset === null && allRecords.length > 0)) return;
             
             isLoading = true;
-            document.getElementById('loaderScroll').style.display = 'block';
-            document.getElementById('noMoreRecords').style.display = 'none';
-
+            
+            // הצגת מצבי טעינה
             if (reset) {
                 document.getElementById('loadingState').style.display = 'block';
                 document.getElementById('tableContent').style.display = 'none';
@@ -642,8 +645,11 @@
                 document.getElementById('tableBody').innerHTML = '';
                 allRecords = [];
                 nextOffset = null;
+            } else {
+                 document.getElementById('loaderScroll').style.display = 'block';
             }
             
+            document.getElementById('noMoreRecords').style.display = 'none';
             document.getElementById('errorContainer').innerHTML = '';
             
             try {
@@ -671,6 +677,7 @@
                 document.getElementById('tableContent').style.display = 'block';
                 document.getElementById('loaderScroll').style.display = 'none';
                 
+                // עדכון הודעת סיום טעינה
                 if (nextOffset === null && allRecords.length > 0) {
                      document.getElementById('noMoreRecords').style.display = 'block';
                 }
@@ -694,11 +701,18 @@
                 row.onclick = () => showDetailView(record.id); 
                 row.style.cursor = 'pointer'; 
                 
+                // חישוב שדה ה'יאראצייט' מתוך שלושה שדות
+                const yurtzitDisplay = [
+                    record.fields['יום'] || '', 
+                    record.fields['חודש_יאראצייט'] || '', 
+                    record.fields['שנה'] || ''
+                ].filter(Boolean).join(' ');
+
                 row.innerHTML = `
                     <td>${record.fields['#'] || '-'}</td> 
                     <td>${record.fields['משפחה_מונצח'] || '-'}</td>
                     <td>${record.fields['שם_המוצבת'] || '-'}</td>
-                    <td>${record.fields['יום'] || ''} ${record.fields['חודש_יאראצייט'] || ''} ${record.fields['שנה'] || ''}</td>
+                    <td>${yurtzitDisplay || '-'}</td>
                     <td>
                          <button class="icon-btn" onclick="event.stopPropagation(); editRecord('${record.id}')" title="ערוך">✏️</button>
                          <button class="icon-btn" onclick="event.stopPropagation(); deleteRecord('${record.id}')" title="מחק">🗑️</button>
@@ -712,26 +726,23 @@
         tableBodyWrapper.addEventListener('scroll', () => {
             if (isFiltering) return;
             
-            // בדיקה אם המשתמש הגיע לתחתית
-            // scrollHeight - גובה כל התוכן הניתן לגלילה
-            // scrollTop - כמה גללנו למטה
-            // clientHeight - הגובה הנראה של ה-Wrapper
-            const isAtBottom = tableBodyWrapper.scrollTop + tableBodyWrapper.clientHeight >= tableBodyWrapper.scrollHeight - 100; // 100px buffer
+            const isAtBottom = tableBodyWrapper.scrollTop + tableBodyWrapper.clientHeight >= tableBodyWrapper.scrollHeight - 100;
             
+            // טעינת רשומות רק אם יש nextOffset (כלומר יש עוד דפים לטעון)
             if (isAtBottom && nextOffset !== null && !isLoading) {
                 fetchRecords(false);
             }
         });
 
 
-        // פונקציות טופס ומודאל (הותאמו ל-Side Modal)
+        // פונקציות טופס ומודאל 
         
         function openAddModal() {
             editingRecordId = null;
             document.getElementById('modalTitle').textContent = 'הוסף רשומה חדשה';
             document.getElementById('recordForm').reset();
             document.getElementById('recordModal').classList.add('show');
-            document.body.style.overflow = 'hidden'; // מונע גלילה ברקע
+            document.body.style.overflow = 'hidden'; 
         }
 
         function editRecord(recordId) {
@@ -745,7 +756,10 @@
             form.reset();
             Object.keys(record.fields).forEach(fieldName => {
                 const input = form.querySelector(`[name="${fieldName}"]`);
-                if (input) input.value = record.fields[fieldName] || '';
+                if (input) {
+                    // טיפול בערכים שיכולים להיות null או undefined
+                    input.value = record.fields[fieldName] !== undefined && record.fields[fieldName] !== null ? record.fields[fieldName] : '';
+                }
             });
             
             document.getElementById('recordModal').classList.add('show');
@@ -754,7 +768,8 @@
 
         function closeModal() {
             document.getElementById('recordModal').classList.remove('show');
-            document.body.style.overflow = 'auto'; // מחזיר גלילה ברקע
+            document.body.style.overflow = 'auto'; 
+            editingRecordId = null; // איפוס לאחר סגירה
         }
         
         // פרטי רשומה (Detail Modal)
@@ -769,7 +784,12 @@
              DETAIL_FIELDS.forEach(f => {
                  let value = record.fields[f.key] || '-';
                  if (f.format === 'date' && value !== '-') {
-                      value = new Date(value).toLocaleDateString('he-IL');
+                      // ודא שפירמוט התאריך תקין
+                      try {
+                          value = new Date(value).toLocaleDateString('he-IL');
+                      } catch(e) {
+                          value = record.fields[f.key]; // נשאר עם הערך המקורי אם הפירמוט נכשל
+                      }
                  }
                  
                  detailContent.innerHTML += `
@@ -803,6 +823,7 @@
             const fields = {};
             
             for (let [key, value] of formData.entries()) {
+                // הוספת רק שדות שיש להם ערך (למניעת שגיאות ב-Airtable)
                 if (value) fields[key] = value;
             }
 
@@ -819,7 +840,7 @@
                 if (!response.ok) throw new Error('שגיאה בשמירת הרשומה');
 
                 closeModal();
-                // טעינה מחדש של כל הרשומות
+                editingRecordId = null; // איפוס לאחר שמירה מוצלחת
                 await fetchRecords(true); 
             } catch (error) {
                 showError('שגיאה בשמירת הרשומה: ' + error.message);
@@ -854,9 +875,10 @@
                 document.getElementById('noMoreRecords').style.display = 'none';
                 
                 const filtered = allRecords.filter(record => {
-                    return Object.values(record.fields).some(value => 
-                        String(value).toLowerCase().includes(searchTerm)
-                    );
+                    return Object.values(record.fields).some(value => {
+                        // טיפול בערכים לא סטרינגיים (כגון מספרים או null)
+                        return String(value || '').toLowerCase().includes(searchTerm);
+                    });
                 });
                 
                 displayRecords(filtered, true);
