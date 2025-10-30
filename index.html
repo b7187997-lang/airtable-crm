@@ -340,10 +340,9 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>שם המוצבת</th>
-                                <th>יחס</th>
-                                <th>אב המוצבת</th>
-                                <th>יאראצייט</th>
+                                <th>#</th>
+                                <th>משפחה מונצח</th>
+                                <th>yurtzit</th>
                                 <th>פעולות</th>
                             </tr>
                         </thead>
@@ -530,27 +529,13 @@
             
             try {
                 // לולאה שממשיכה לשלוף רשומות כל עוד קיים 'offset' (כלומר, יש עוד דפים)
-                do {
-                    let url = API_URL;
-                    // אם קיים offset, אנו מוסיפים אותו כפרמטר לכתובת
-                    if (offset) {
-                        url += `?offset=${offset}`; 
-                    }
-                    
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    
-                    if (!response.ok) throw new Error(data.error || 'שגיאה בטעינת הנתונים');
-                    
-                    // הוספת הרשומות שנתקבלו למערך הכללי
-                    fetchedRecords = fetchedRecords.concat(data.records);
-                    
-                    // שמירת ה-offset הבא שמוחזר מהשרת (כדי לבקש את הדף הבא)
-                    offset = data.offset; 
-                    
-                } while (offset); // הלולאה ממשיכה כל עוד ה-offset מוגדר
-
-                allRecords = fetchedRecords;
+                // שימו לב: ה-index.html פשוט מבקש נתונים, הפגינציה מתבצעת כעת ב-airtable.js
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || 'שגיאה בטעינת הנתונים');
+                
+                allRecords = data.records; // ה-Netlify Function מחזיר כבר את כל הרשומות
                 displayRecords(allRecords);
 
             } catch (error) {
@@ -560,7 +545,7 @@
             }
         }
 
-        // פונקציית תצוגת הרשומות (מצומצמת)
+        // 1. פונקציית תצוגת הרשומות (מצומצמת ומעודכנת)
         function displayRecords(records) {
             document.getElementById('loadingState').style.display = 'none';
             
@@ -573,18 +558,17 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            records.forEach(record => {
+            records.forEach((record, index) => { // *** שימו לב: הוספתי את index ***
                 const row = tbody.insertRow();
                 
                 // **הוספת אירוע לחיצה על השורה**
                 row.onclick = () => showDetailView('${record.id}'); 
                 row.style.cursor = 'pointer'; 
                 
-                // תצוגת 4 השדות המבוקשים + עמודת פעולות
+                // *** תצוגת 3 השדות החדשים + עמודת פעולות ***
                 row.innerHTML = `
-                    <td>${record.fields['שם_המוצבת'] || '-'}</td>
-                    <td>${record.fields['יחס'] || '-'}</td>
-                    <td>${record.fields['אב_המוצבת'] || '-'}</td>
+                    <td>${index + 1}</td> 
+                    <td>${record.fields['משפחה_מוצבת'] || '-'}</td>
                     <td>${record.fields['יום'] || ''} ${record.fields['חודש_יאראצייט'] || ''} ${record.fields['שנה'] || ''}</td>
                     <td>
                          <button class="icon-btn" onclick="event.stopPropagation(); editRecord('${record.id}')" title="ערוך">✏️</button>
