@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מערכת CRM - רשימת שמות</title>
     <style>
-        /* קוד ה-CSS נשאר זהה לקוד המקורי שלך */
+        /* קוד ה-CSS נשאר זהה לקוד המקורי שלך, עם שיפור קטן לטופס */
         * {
             margin: 0;
             padding: 0;
@@ -58,7 +58,7 @@
             min-width: 250px;
         }
 
-        .search-box input, .form-group input, .form-group select { /* הוספת select */
+        .search-box input, .form-group input, .form-group select {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e1e8ed;
@@ -67,7 +67,7 @@
             transition: all 0.3s;
         }
 
-        .search-box input:focus, .form-group input:focus, .form-group select:focus { /* הוספת select */
+        .search-box input:focus, .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -157,7 +157,7 @@
             padding: 14px 16px;
             border-bottom: 1px solid #e2e8f0;
             color: #4a5568;
-            white-space: nowrap; /* מונע שבירת שורות בטבלה */
+            white-space: nowrap;
         }
 
         tbody tr {
@@ -165,7 +165,7 @@
         }
 
         tbody tr:hover {
-            background: #f7fafc;
+            background: #eef1f6; /* רקע בהיר להדגשת הלחיצה */
         }
 
         .actions {
@@ -229,9 +229,9 @@
             background: white;
             border-radius: 12px;
             padding: 30px;
-            max-width: 900px; /* הוגדל כדי להכיל יותר שדות */
+            max-width: 900px;
             width: 90%;
-            max-height: 90vh; /* הוגדל */
+            max-height: 90vh;
             overflow-y: auto;
         }
 
@@ -253,31 +253,37 @@
             color: #4a5568;
         }
 
-        /* סגנון חדש: שדות מחולקים ל-3 עמודות בתוך הטופס */
         .form-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
         }
         
+        /* שיפור תצוגת הפרטים ב-detailModal */
+        #detailContent .form-group {
+            background: #f7fafc;
+            border-radius: 6px;
+            padding: 10px 15px;
+            border-right: 4px solid #667eea;
+            margin-bottom: 10px;
+        }
+        
+        #detailContent .form-group label {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 2px;
+        }
+        
+        #detailContent .value {
+            color: #4a5568;
+            font-size: 15px;
+        }
+
         .modal-footer {
             display: flex;
             gap: 10px;
             justify-content: flex-end;
             margin-top: 24px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .badge-success {
-            background: #c6f6d5;
-            color: #22543d;
         }
 
         .error-message {
@@ -287,7 +293,7 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
-
+        
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -334,23 +340,12 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>פעולות</th>
-                                <th>משפחה מוצבת</th>
-                                <th>שם מוצבת</th>
+                                <th>שם המוצבת</th>
                                 <th>יחס</th>
-                                <th>אב מוצבת</th>
-                                <th>יום</th>
-                                <th>חודש יארצייט</th>
-                                <th>שנה</th>
-                                <th>תואר לפני מוצבת</th>
-                                <th>תואר אחרי מוצבת</th>
-                                <th>תאריך פטירה</th>
-                                <th>כתובת</th>
-                                <th>טלפון</th>
-                                <th>ישוב</th>
-                                <th>טלפון נייד</th>
-                                <th>אימייל</th>
-                                </tr>
+                                <th>אב המוצבת</th>
+                                <th>יאראצייט</th>
+                                <th>פעולות</th>
+                            </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
                     </table>
@@ -369,10 +364,23 @@
         </div>
     </div>
 
+    <div id="detailModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">פרטי הרשומה המלאים</div>
+            <div id="detailContent" class="form-row" style="grid-template-columns: 1fr;">
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDetailModal()">סגור</button>
+                <button type="button" class="btn btn-primary" id="detailEditButton" onclick="openEditFromDetail()">✏️ ערוך רשומה</button>
+            </div>
+        </div>
+    </div>
+
     <div id="recordModal" class="modal">
         <div class="modal-content">
             <div class="modal-header" id="modalTitle">הוסף רשומה חדשה</div>
             <form id="recordForm">
+                
                 <div class="form-row">
                     <div class="form-group">
                         <label for="משפחה_מוצבת">משפחה מוצבת</label>
@@ -397,7 +405,7 @@
                             <option value="בת">בת</option>
                             <option value="אח">אח</option>
                             <option value="אחות">אחות</option>
-                            </select>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="יום">יום (תאריך פטירה עברי)</label>
@@ -476,6 +484,7 @@
                         <input type="email" name="אימייל" id="אימייל">
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">ביטול</button>
                     <button type="submit" class="btn btn-success">💾 שמור</button>
@@ -488,8 +497,27 @@
         let allRecords = [];
         let editingRecordId = null;
 
-        // Replace with your Netlify function URL after deployment
         const API_URL = '/.netlify/functions/airtable';
+        
+        // הגדרת השדות לשימוש ב-Detail View
+        const DETAIL_FIELDS = [
+            { label: 'משפחה מוצבת', key: 'משפחה_מוצבת' },
+            { label: 'שם המוצבת', key: 'שם_המוצבת' },
+            { label: 'יחס', key: 'יחס' },
+            { label: 'אב המוצבת', key: 'אב_המוצבת' },
+            { label: 'יום (עברי)', key: 'יום' },
+            { label: 'חודש יאראצייט', key: 'חודש_יאראצייט' },
+            { label: 'שנה (עברית)', key: 'שנה' },
+            { label: 'תואר לפני', key: 'תואר_לפני_מוצבת' },
+            { label: 'תואר אחרי', key: 'תואר_אחרי_מוצבת' },
+            { label: 'תאריך פטירה (לועזי)', key: 'תאריך_פטירה', format: 'date' },
+            { label: 'כתובת', key: 'כתובת' },
+            { label: 'ישוב', key: 'ישוב' },
+            { label: 'טלפון', key: 'טלפון' },
+            { label: 'טלפון נייד', key: 'טלפון_נייד' },
+            { label: 'אימייל', key: 'אימייל' }
+        ];
+
 
         async function fetchRecords() {
             document.getElementById('loadingState').style.display = 'block';
@@ -511,6 +539,7 @@
             }
         }
 
+        // 1. פונקציית תצוגת הרשומות (מצומצמת)
         function displayRecords(records) {
             document.getElementById('loadingState').style.display = 'none';
             
@@ -525,37 +554,70 @@
 
             records.forEach(record => {
                 const row = tbody.insertRow();
-                // עדכון 3: בניית שורת טבלה עם כל 15 השדות החדשים
+                
+                // **הוספת אירוע לחיצה על השורה**
+                row.onclick = () => showDetailView('${record.id}'); 
+                row.style.cursor = 'pointer'; 
+                
+                // תצוגת 4 השדות המבוקשים + עמודת פעולות
                 row.innerHTML = `
-                    <td>
-                        <div class="actions">
-                            <button class="icon-btn" onclick="editRecord('${record.id}')" title="ערוך">✏️</button>
-                            <button class="icon-btn" onclick="deleteRecord('${record.id}')" title="מחק">🗑️</button>
-                        </div>
-                    </td>
-                    <td>${record.fields['משפחה_מוצבת'] || '-'}</td>
                     <td>${record.fields['שם_המוצבת'] || '-'}</td>
                     <td>${record.fields['יחס'] || '-'}</td>
                     <td>${record.fields['אב_המוצבת'] || '-'}</td>
-                    <td>${record.fields['יום'] || '-'}</td>
-                    <td>${record.fields['חודש_יאראצייט'] || '-'}</td>
-                    <td>${record.fields['שנה'] || '-'}</td>
-                    <td>${record.fields['תואר_לפני_מוצבת'] || '-'}</td>
-                    <td>${record.fields['תואר_אחרי_מוצבת'] || '-'}</td>
-                    <td>${record.fields['תאריך_פטירה'] ? new Date(record.fields['תאריך_פטירה']).toLocaleDateString('he-IL') : '-'}</td>
-                    <td>${record.fields['כתובת'] || '-'}</td>
-                    <td>${record.fields['טלפון'] || '-'}</td>
-                    <td>${record.fields['ישוב'] || '-'}</td>
-                    <td>${record.fields['טלפון_נייד'] || '-'}</td>
-                    <td>${record.fields['אימייל'] || '-'}</td>
+                    <td>${record.fields['יום'] || ''} ${record.fields['חודש_יאראצייט'] || ''} ${record.fields['שנה'] || ''}</td>
+                    <td>
+                         <button class="icon-btn" onclick="event.stopPropagation(); editRecord('${record.id}')" title="ערוך">✏️</button>
+                         <button class="icon-btn" onclick="event.stopPropagation(); deleteRecord('${record.id}')" title="מחק">🗑️</button>
+                    </td>
                 `;
             });
         }
 
+        // 2. פונקציות לכרטיסיית הפרטים (Detail Modal)
+        function showDetailView(recordId) {
+            const record = allRecords.find(r => r.id === recordId);
+            if (!record) return;
+
+            // הגדרת ID הרשומה שאותה אנו צופים כעת
+            editingRecordId = recordId; 
+
+            const detailContent = document.getElementById('detailContent');
+            detailContent.innerHTML = '';
+            
+            // בניית כרטיסיית הפרטים עם כל השדות
+            DETAIL_FIELDS.forEach(f => {
+                let value = record.fields[f.key] || '-';
+                if (f.format === 'date' && value !== '-') {
+                     value = new Date(value).toLocaleDateString('he-IL');
+                }
+                
+                detailContent.innerHTML += `
+                    <div class="form-group">
+                        <label>${f.label}:</label>
+                        <div class="value">${value}</div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('show');
+            editingRecordId = null; 
+        }
+
+        function openEditFromDetail() {
+            // סגור את חלון הפרטים
+            closeDetailModal();
+            // פתח את חלון העריכה עם הנתונים שנטענו (ע"י הפונקציה editRecord)
+            editRecord(editingRecordId); 
+        }
+
+        // פונקציות קיימות
         function filterRecords() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allRecords.filter(record => {
-                // בדיקת החיפוש מתבצעת על כל שדות הרשומה
                 return Object.values(record.fields).some(value => 
                     String(value).toLowerCase().includes(searchTerm)
                 );
@@ -577,7 +639,6 @@
             document.getElementById('modalTitle').textContent = 'ערוך רשומה';
             const form = document.getElementById('recordForm');
             
-            // עדכון: הפונקציה כבר מקבלת את השם משדה ה-name, כך שאין צורך לעדכן כאן
             Object.keys(record.fields).forEach(fieldName => {
                 const input = form.querySelector(`[name="${fieldName}"]`);
                 if (input) input.value = record.fields[fieldName] || '';
@@ -609,14 +670,10 @@
         document.getElementById('recordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // השימוש ב-FormData והלולאה הקיימת כבר משרת את כל השדות החדשים
-            // וזהו היתרון הגדול בשימוש ב-name לשדות הקלט במקום ID
             const formData = new FormData(e.target);
             const fields = {};
             
             for (let [key, value] of formData.entries()) {
-                // Airtable לא מקבלת שדות ריקים משדות Select או Date בצורה טובה,
-                // לכן אנו שולחים רק אם קיים ערך.
                 if (value) fields[key] = value;
             }
 
