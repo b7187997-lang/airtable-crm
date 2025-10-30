@@ -19,7 +19,7 @@
 
         /* Header */
         .header {
-            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            background: linear-gradient(135deg, #556B2F 0%, #3d4f21 100%);
             color: white;
             padding: 28px 40px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -63,15 +63,15 @@
         }
 
         .btn-primary {
-            background: #4a90e2;
+            background: #556B2F;
             color: white;
-            box-shadow: 0 2px 4px rgba(74, 144, 226, 0.25);
+            box-shadow: 0 2px 4px rgba(85, 107, 47, 0.25);
         }
 
         .btn-primary:hover {
-            background: #357abd;
+            background: #3d4f21;
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+            box-shadow: 0 4px 8px rgba(85, 107, 47, 0.3);
         }
 
         .btn-secondary {
@@ -81,6 +81,15 @@
 
         .btn-secondary:hover {
             background: #cbd5e0;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c53030;
         }
 
         .search-input {
@@ -95,8 +104,8 @@
 
         .search-input:focus {
             outline: none;
-            border-color: #4a90e2;
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+            border-color: #556B2F;
+            box-shadow: 0 0 0 3px rgba(85, 107, 47, 0.1);
         }
 
         /* Table */
@@ -128,7 +137,7 @@
         }
 
         th {
-            padding: 18px 24px;
+            padding: 14px 20px;
             text-align: right;
             font-weight: 700;
             color: #1a202c;
@@ -138,53 +147,26 @@
 
         th:first-child {
             width: 350px;
-            text-align: right;
-        }
-
-        th:last-child {
-            width: 140px;
-            text-align: center;
         }
 
         td {
-            padding: 18px 24px;
+            padding: 12px 20px;
             border-bottom: 1px solid #f1f5f9;
             color: #4a5568;
         }
 
-        td:first-child {
-            text-align: right;
-            font-weight: 600;
-            color: #2d3748;
-            font-size: 15px;
-        }
-
-        td:last-child {
-            text-align: center;
-        }
-
         tbody tr {
             transition: background 0.15s;
+            cursor: pointer;
         }
 
         tbody tr:hover {
             background: #f8fafc;
         }
 
-        .icon-btn {
-            padding: 7px 12px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 17px;
-            opacity: 0.6;
-            transition: all 0.2s;
-            border-radius: 6px;
-        }
-
-        .icon-btn:hover {
-            opacity: 1;
-            background: #edf2f7;
+        .load-more-btn {
+            text-align: center;
+            padding: 24px;
         }
 
         /* Modal */
@@ -220,7 +202,7 @@
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            background: linear-gradient(135deg, #556B2F 0%, #3d4f21 100%);
             color: white;
             padding: 26px 36px;
             font-size: 24px;
@@ -303,9 +285,14 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #4a90e2;
+            border-color: #556B2F;
             background: white;
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+            box-shadow: 0 0 0 3px rgba(85, 107, 47, 0.1);
+        }
+
+        .form-group input:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
         }
 
         .modal-footer {
@@ -314,7 +301,7 @@
             border-top: 1px solid #e2e8f0;
             display: flex;
             gap: 12px;
-            justify-content: flex-end;
+            justify-content: space-between;
         }
 
         /* Loading & Empty States */
@@ -326,7 +313,7 @@
 
         .spinner {
             border: 3px solid #e2e8f0;
-            border-top: 3px solid #4a90e2;
+            border-top: 3px solid #556B2F;
             border-radius: 50%;
             width: 45px;
             height: 45px;
@@ -337,12 +324,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .load-more {
-            text-align: center;
-            padding: 28px;
-            color: #718096;
         }
 
         .error-message {
@@ -402,26 +383,45 @@
                         <th>שם המנוח</th>
                         <th>שם משפחת המנוח</th>
                         <th>יום היאהרצייט (עברי)</th>
-                        <th>פעולות</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="4" class="loading-row">
+                        <td colspan="3" class="loading-row">
                             <div class="spinner"></div>
                             <p>טוען רשימת נפטרים...</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <div id="loadMore" class="load-more" style="display: none;">
-                <div class="spinner"></div>
-                <p>טוען רשומות נוספות...</p>
+        </div>
+        <div id="loadMoreContainer" class="load-more-btn" style="display: none;">
+            <button class="btn btn-primary" onclick="fetchRecords(false)">
+                ⬇️ טען עוד רשומות
+            </button>
+        </div>
+    </div>
+
+    <!-- View Modal -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>פרטי הנפטר</span>
+                <button class="modal-close" onclick="closeViewModal()">×</button>
+            </div>
+            <div class="modal-body" id="viewModalBody">
+                <!-- Content will be filled by JS -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="deleteBtn">🗑️ מחק רשומה</button>
+                <div style="flex: 1;"></div>
+                <button type="button" class="btn btn-secondary" onclick="closeViewModal()">סגור</button>
+                <button type="button" class="btn btn-primary" id="editBtn">✏️ ערוך</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Edit Modal -->
     <div id="recordModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -521,6 +521,7 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <div style="flex: 1;"></div>
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">ביטול</button>
                 <button type="button" class="btn btn-primary" onclick="document.getElementById('recordForm').requestSubmit()">💾 שמור</button>
             </div>
@@ -531,6 +532,7 @@
         let allRecords = [];
         let displayedRecords = [];
         let editingRecordId = null;
+        let viewingRecordId = null;
         let nextOffset = null;
         let isLoading = false;
         let isFiltering = false;
@@ -547,13 +549,12 @@
                 displayedRecords = [];
                 nextOffset = null;
                 document.getElementById('tableBody').innerHTML = `
-                    <tr><td colspan="4" class="loading-row">
+                    <tr><td colspan="3" class="loading-row">
                         <div class="spinner"></div>
                         <p>טוען רשימת נפטרים...</p>
                     </td></tr>
                 `;
-            } else {
-                document.getElementById('loadMore').style.display = 'block';
+                document.getElementById('loadMoreContainer').style.display = 'none';
             }
 
             document.getElementById('errorContainer').innerHTML = '';
@@ -574,11 +575,17 @@
 
                 displayRecords(data.records, reset);
 
+                // הצג/הסתר כפתור "טען עוד"
+                if (nextOffset) {
+                    document.getElementById('loadMoreContainer').style.display = 'block';
+                } else {
+                    document.getElementById('loadMoreContainer').style.display = 'none';
+                }
+
             } catch (error) {
                 showError('שגיאה בטעינת הנתונים: ' + error.message);
             } finally {
                 isLoading = false;
-                document.getElementById('loadMore').style.display = 'none';
             }
         }
 
@@ -591,7 +598,7 @@
             }
 
             if (allRecords.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div style="font-size: 56px; margin-bottom: 20px;">📋</div><h3>אין רשומות במערכת</h3><p style="margin-top: 12px;">לחץ על "הוסף נפטר חדש" כדי להוסיף רשומה ראשונה</p></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="empty-state"><div style="font-size: 56px; margin-bottom: 20px;">📋</div><h3>אין רשומות במערכת</h3><p style="margin-top: 12px;">לחץ על "הוסף נפטר חדש" כדי להוסיף רשומה ראשונה</p></td></tr>';
                 return;
             }
 
@@ -605,49 +612,14 @@
                 ].filter(Boolean).join(' ');
 
                 const row = tbody.insertRow();
+                row.onclick = () => viewRecord(record.id);
                 row.innerHTML = `
                     <td><strong>${record.fields['שם_המונצח'] || '-'}</strong></td>
                     <td>${record.fields['משפחה_מונצח'] || '-'}</td>
                     <td>${yahrtzeit || '-'}</td>
-                    <td>
-                        <button class="icon-btn" onclick="editRecord('${record.id}')" title="ערוך פרטים">✏️</button>
-                        <button class="icon-btn" onclick="deleteRecord('${record.id}')" title="מחק רשומה">🗑️</button>
-                    </td>
                 `;
             });
         }
-
-        const tableWrapper = document.getElementById('tableWrapper');
-        tableWrapper.addEventListener('scroll', () => {
-            if (isFiltering || isLoading) return;
-
-            // בדיקה אם הגענו לתחתית
-            const scrollTop = tableWrapper.scrollTop;
-            const scrollHeight = tableWrapper.scrollHeight;
-            const clientHeight = tableWrapper.clientHeight;
-            
-            // כאשר נשארו פחות מ-50 פיקסלים לתחתית - טען עוד
-            if (scrollTop + clientHeight >= scrollHeight - 50) {
-                if (nextOffset !== null) {
-                    fetchRecords(false);
-                }
-            }
-        });
-        
-        // גם בדוק כל 2 שניות אם יש צורך לטעון עוד (למקרה שהתוכן קצר)
-        setInterval(() => {
-            if (isFiltering || isLoading) return;
-            
-            const tableWrapper = document.getElementById('tableWrapper');
-            const scrollTop = tableWrapper.scrollTop;
-            const scrollHeight = tableWrapper.scrollHeight;
-            const clientHeight = tableWrapper.clientHeight;
-            
-            // אם אין גלילה בכלל (כל התוכן נראה) וי מש offset - טען עוד
-            if (scrollHeight <= clientHeight + 10 && nextOffset !== null) {
-                fetchRecords(false);
-            }
-        }, 2000);
 
         function filterRecords() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -656,6 +628,7 @@
 
             if (searchTerm.length > 0) {
                 isFiltering = true;
+                document.getElementById('loadMoreContainer').style.display = 'none';
                 const filtered = allRecords.filter(record => {
                     return Object.values(record.fields).some(value =>
                         String(value || '').toLowerCase().includes(searchTerm)
@@ -665,7 +638,66 @@
             } else {
                 isFiltering = false;
                 displayRecords(allRecords, true);
+                if (nextOffset) {
+                    document.getElementById('loadMoreContainer').style.display = 'block';
+                }
             }
+        }
+
+        function viewRecord(recordId) {
+            viewingRecordId = recordId;
+            const record = allRecords.find(r => r.id === recordId);
+            if (!record) return;
+
+            const fields = [
+                { label: 'משפחה מונצח', key: 'משפחה_מונצח' },
+                { label: 'שם המונצח', key: 'שם_המונצח' },
+                { label: 'יחס', key: 'יחס' },
+                { label: 'אב המונצח', key: 'אב_מונצח' },
+                { label: 'תואר לפני', key: 'תואר_לפני_מונצח' },
+                { label: 'תואר אחרי', key: 'תואר_אחרי_מונצח' },
+                { label: 'יום (עברי)', key: 'יום' },
+                { label: 'חודש יאהרצייט', key: 'חודש_יאהרצייט' },
+                { label: 'שנה', key: 'שנה' },
+                { label: 'תאריך פטירה', key: 'תאריך_פטירה' },
+                { label: 'כתובת', key: 'כתובת' },
+                { label: 'ישוב', key: 'ישוב' },
+                { label: 'טלפון', key: 'טלפון' },
+                { label: 'טלפון נייד', key: 'טלפון_נייד' },
+                { label: 'אימייל', key: 'אימייל' }
+            ];
+
+            let html = '<div class="form-section">';
+            fields.forEach(field => {
+                const value = record.fields[field.key] || '-';
+                html += `
+                    <div class="form-group">
+                        <label>${field.label}:</label>
+                        <input type="text" value="${value}" disabled>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            document.getElementById('viewModalBody').innerHTML = html;
+            document.getElementById('viewModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            document.getElementById('editBtn').onclick = () => {
+                closeViewModal();
+                editRecord(recordId);
+            };
+
+            document.getElementById('deleteBtn').onclick = () => {
+                closeViewModal();
+                deleteRecord(recordId);
+            };
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+            viewingRecordId = null;
         }
 
         function openAddModal() {
