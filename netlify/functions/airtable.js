@@ -5,7 +5,6 @@ const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME } = process.env;
 
 if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !AIRTABLE_TABLE_NAME) {
     console.error("Airtable environment variables are not set correctly.");
-    // יצירת פונקציה דמה כדי למנוע קריסה במהלך פיתוח מקומי ללא משתנים
     exports.handler = async (event, context) => {
         return {
             statusCode: 500,
@@ -23,69 +22,59 @@ if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !AIRTABLE_TABLE_NAME) {
         
         try {
             switch (httpMethod) {
-                // *** קריאה (READ) עם תמיכה ב-OFFSET (PAGINATION) ***
+                // *** קריאה (READ) עם תמיכה ב-OFFSET ו-pageSize = 100 ***
                 case 'GET': {
                     const offset = queryStringParameters.offset || null;
-                    const pageSize = 100; // הגבלת טעינה ל-100 רשומות בכל פעם
+                    const pageSize = 100; // הגבלת טעינה ל-100 רשומות בכל פעם - חובה!
 
                     let queryOptions = {
                         pageSize: pageSize,
-                        view: "Grid view", // שם התצוגה שלך
-                        sort: [{field: "#", direction: "asc"}] // מיון לפי שדה #
+                        view: "Grid view", 
+                        // חשוב לוודא ששם התצוגה נכון
+                        sort: [{field: "#", direction: "asc"}]
                     };
 
                     if (offset) {
                         queryOptions.offset = offset;
                     }
 
-                    const records = await table.select(queryOptions).firstPage();
+                    // שימו לב: Airtable מחזיר את כל הנתונים אם לא מציינים offset בבקשה הראשונה,
+                    // אבל אנחנו משתמשים ב-firstPage() וב-pageSize: 100
+                    const { records, offset: nextOffset } = await table.select(queryOptions).all().then(result => ({
+                        records: result.slice(0, pageSize), // לוקחים רק את 100 הראשונים 
+                        offset: result.offset // מחזיר את ה-offset הבא או undefined אם אין עוד
+                    }));
                     
-                    // החזרת הנתונים, כולל ה-offset הבא (אם קיים)
                     return {
                         statusCode: 200,
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             records: records,
-                            offset: records.offset || null 
+                            offset: nextOffset || null 
                         }),
                     };
                 }
 
-                // *** יצירה (CREATE) ***
+                // POST, PATCH, DELETE - נשארים זהים
                 case 'POST': {
                     const { fields } = JSON.parse(event.body);
                     const newRecord = await table.create([{ fields }]);
-                    return {
-                        statusCode: 201,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newRecord),
-                    };
+                    return { statusCode: 201, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newRecord) };
                 }
 
-                // *** עדכון (UPDATE) ***
                 case 'PATCH': {
                     const { id } = queryStringParameters;
                     const { fields } = JSON.parse(event.body);
                     if (!id) throw new Error('Record ID is required for PATCH.');
-                    
                     const updatedRecord = await table.update([{ id, fields }]);
-                    return {
-                        statusCode: 200,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updatedRecord),
-                    };
+                    return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedRecord) };
                 }
 
-                // *** מחיקה (DELETE) ***
                 case 'DELETE': {
                     const { id } = queryStringParameters;
                     if (!id) throw new Error('Record ID is required for DELETE.');
-                    
                     await table.destroy([id]);
-                    return {
-                        statusCode: 200,
-                        body: JSON.stringify({ success: true, id }),
-                    };
+                    return { statusCode: 200, body: JSON.stringify({ success: true, id }) };
                 }
 
                 default:
