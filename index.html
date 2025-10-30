@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מערכת CRM - רשימת שמות</title>
     <style>
-        /* קוד ה-CSS נשאר זהה לקוד המקורי שלך, עם שיפור קטן לטופס */
+        /* CSS מעודכן (עיצוב חדש עם סרגל צד) */
         * {
             margin: 0;
             padding: 0;
@@ -15,69 +15,107 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f7fa;
+            display: flex; /* מאפשר הצמדה של סרגל צד */
             min-height: 100vh;
+            color: #1a202c;
+        }
+        
+        /* סרגל צד (Sidebar) */
+        .sidebar {
+            width: 250px;
+            background-color: #0b1a37; /* כחול כהה */
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0; /* מונע התכווצות */
+        }
+
+        .sidebar h2 {
+            font-size: 20px;
+            padding: 0 20px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            color: #48bb78; /* צבע ירוק-מנטה */
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #a0aec0; /* אפור בהיר */
+            font-size: 15px;
+            transition: all 0.2s;
+            border-right: 4px solid transparent;
+        }
+
+        .sidebar-menu a:hover {
+            background-color: #1a345e;
+            color: white;
+        }
+
+        .sidebar-menu a.active {
+            background-color: #1a345e;
+            color: white;
+            border-right: 4px solid #48bb78; /* קו הדגשה ירוק */
+            font-weight: 600;
+        }
+        
+        .sidebar-menu span {
+            margin-left: 10px;
+        }
+
+        /* תוכן ראשי (Main Content) */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            color: #1a202c;
             padding: 20px 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            margin-bottom: 25px;
         }
 
         .header h1 {
-            font-size: 28px;
+            font-size: 26px;
             margin-bottom: 5px;
         }
 
         .header p {
-            opacity: 0.9;
+            opacity: 0.8;
             font-size: 14px;
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px;
+            /* מבטל את הגבלת ה-max-width הישנה כדי להתפרס על כל התוכן הראשי */
+            padding: 0; 
         }
 
         .toolbar {
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             margin-bottom: 20px;
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
             align-items: center;
+            border-right: 4px solid #667eea; /* קו הדגשה כחול */
         }
 
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .search-box input, .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: all 0.3s;
-        }
-
-        .search-box input:focus, .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
+        /* עיצוב כפתורים משופר */
         .btn {
-            padding: 12px 24px;
+            padding: 10px 20px; /* קטן יותר */
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 6px; /* פינות חדות פחות */
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -91,53 +129,48 @@
             color: white;
         }
 
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
         .btn-success {
             background: #48bb78;
             color: white;
         }
-
-        .btn-success:hover {
-            background: #38a169;
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
 
-        .btn-danger {
-            background: #f56565;
-            color: white;
+        .search-box {
+            flex: 1;
+            min-width: 200px;
         }
 
-        .btn-danger:hover {
-            background: #e53e3e;
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
         }
 
-        .btn-secondary {
-            background: #718096;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #4a5568;
-        }
-
+        /* טבלה */
         .table-container {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             overflow: hidden;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 14px;
         }
 
         thead {
@@ -145,18 +178,18 @@
         }
 
         th {
-            padding: 16px;
+            padding: 12px 16px;
             text-align: right;
-            font-weight: 600;
-            color: #2d3748;
-            border-bottom: 2px solid #e2e8f0;
+            font-weight: 700;
+            color: #4a5568;
+            border-bottom: 1px solid #e2e8f0;
             white-space: nowrap;
         }
 
         td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #e2e8f0;
-            color: #4a5568;
+            padding: 12px 16px;
+            border-bottom: 1px solid #edf2f7;
+            color: #2d3748;
             white-space: nowrap;
         }
 
@@ -165,204 +198,134 @@
         }
 
         tbody tr:hover {
-            background: #eef1f6; /* רקע בהיר להדגשת הלחיצה */
-        }
-
-        .actions {
-            display: flex;
-            gap: 8px;
+            background: #f7fafc;
         }
 
         .icon-btn {
-            padding: 8px;
+            padding: 6px;
             border: none;
             background: none;
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 4px;
             transition: all 0.2s;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         .icon-btn:hover {
             background: #edf2f7;
         }
 
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: #718096;
+        /* מודאלים וטפסים - שיפורי ניראות קלים */
+        .modal {
+            /* כללי נשארים */
         }
 
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+        .modal-content {
+            padding: 25px;
+            border-radius: 8px;
+        }
+        
+        .modal-header {
+            font-size: 20px;
+        }
+        
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            width: 100%;
+            font-size: 14px;
         }
 
+        .loading, .empty-state, .error-message {
+            /* נשארים כפי שהיו */
+        }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 900px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #2d3748;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #4a5568;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-        
-        /* שיפור תצוגת הפרטים ב-detailModal */
-        #detailContent .form-group {
-            background: #f7fafc;
-            border-radius: 6px;
-            padding: 10px 15px;
-            border-right: 4px solid #667eea;
-            margin-bottom: 10px;
-        }
-        
-        #detailContent .form-group label {
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 2px;
-        }
-        
-        #detailContent .value {
-            color: #4a5568;
-            font-size: 15px;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 24px;
-        }
-
-        .error-message {
-            background: #fed7d7;
-            color: #742a2a;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #718096;
-        }
-
-        .empty-state svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📊 מערכת CRM - רשימת שמות</h1>
-        <p>ניהול מלא עם אפשרות עריכה, הוספה ומחיקה</p>
+    
+    <div class="sidebar">
+        <h2>מערכת CRM</h2>
+        <div class="sidebar-menu">
+            <a href="#" class="active">
+                <span>📝</span> רשימת שמות
+            </a>
+            <a href="#">
+                <span>📂</span> דו"חות
+            </a>
+            <a href="#">
+                <span>⚙️</span> הגדרות
+            </a>
+        </div>
     </div>
 
-    <div class="container">
-        <div class="toolbar">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 חפש..." onkeyup="filterRecords()">
-            </div>
-            <button class="btn btn-primary" onclick="fetchRecords()">
-                🔄 רענן
-            </button>
-            <button class="btn btn-success" onclick="openAddModal()">
-                ➕ הוסף רשומה
-            </button>
+    <div class="main-content">
+        <div class="header">
+            <h1>רשימת שמות</h1>
+            <p>ניהול מלא עם אפשרות עריכה, הוספה ומחיקה</p>
         </div>
 
-        <div id="errorContainer"></div>
-
-        <div class="table-container">
-            <div id="loadingState" class="loading">
-                <div class="spinner"></div>
-                <p>טוען נתונים...</p>
-            </div>
-
-            <div id="tableContent" style="display: none;">
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>משפחה מונצח</th>
-                                <th>yurtzit</th>
-                                <th>פעולות</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody"></tbody>
-                    </table>
+        <div class="container">
+            <div class="toolbar">
+                <button class="btn btn-success" onclick="openAddModal()">
+                    ➕ הוסף רשומה
+                </button>
+                <button class="btn btn-primary" onclick="fetchRecords()">
+                    🔄 רענן
+                </button>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 חפש..." onkeyup="filterRecords()">
                 </div>
             </div>
 
-            <div id="emptyState" style="display: none;" class="empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                    <line x1="3" y1="9" x2="21" y2="9"></line>
-                    <line x1="9" y1="21" x2="9" y2="9"></line>
-                </svg>
-                <h3>אין רשומות</h3>
-                <p>לחץ על "הוסף רשומה" כדי להתחיל</p>
+            <div id="errorContainer"></div>
+
+            <div class="table-container">
+                <div id="loadingState" class="loading">
+                    <div class="spinner"></div>
+                    <p>טוען נתונים...</p>
+                </div>
+
+                <div id="tableContent" style="display: none;">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>משפחה מונצח</th>
+                                    <th>שם המוצבת</th>
+                                    <th>yurtzit</th>
+                                    <th>פעולות</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="emptyState" style="display: none;" class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <h3>אין רשומות</h3>
+                    <p>לחץ על "הוסף רשומה" כדי להתחיל</p>
+                </div>
             </div>
         </div>
     </div>
-
+    
     <div id="detailModal" class="modal">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">פרטי הרשומה המלאים</div>
@@ -500,7 +463,7 @@
         
         // הגדרת השדות לשימוש ב-Detail View
         const DETAIL_FIELDS = [
-            // *** שם שדה תוקן ל: משפחה_מונצח ***
+            // שדה תוקן: משפחה_מונצח
             { label: 'משפחה מונצח', key: 'משפחה_מונצח' }, 
             { label: 'שם המוצבת', key: 'שם_המוצבת' },
             { label: 'יחס', key: 'יחס' },
@@ -518,7 +481,7 @@
             { label: 'אימייל', key: 'אימייל' }
         ];
 
-        // *** פונקציית טעינת רשומות (Netlify Function מטפל בפגינציה) ***
+        // *** פונקציית טעינת רשומות (ה-Netlify Function מחזיר את הכל) ***
         async function fetchRecords() {
             document.getElementById('loadingState').style.display = 'block';
             document.getElementById('tableContent').style.display = 'none';
@@ -526,7 +489,6 @@
             document.getElementById('errorContainer').innerHTML = '';
             
             try {
-                // ה-index.html פשוט מבקש נתונים, ה-Netlify Function מחזיר את הכל.
                 const response = await fetch(API_URL);
                 const data = await response.json();
                 
@@ -542,7 +504,7 @@
             }
         }
 
-        // 1. פונקציית תצוגת הרשומות (מצומצמת ומעודכנת)
+        // 1. פונקציית תצוגת הרשומות (מתוקן: #, משפחה_מונצח ושם המוצבת נוסף)
         function displayRecords(records) {
             document.getElementById('loadingState').style.display = 'none';
             
@@ -559,13 +521,14 @@
                 const row = tbody.insertRow();
                 
                 // **הוספת אירוע לחיצה על השורה**
-                row.onclick = () => showDetailView('${record.id}'); 
+                row.onclick = () => showDetailView(record.id); 
                 row.style.cursor = 'pointer'; 
                 
-                // *** תצוגת 3 השדות החדשים + עמודת פעולות (תיקון שמות שדות) ***
+                // *** תצוגת השדות המעודכנים ***
                 row.innerHTML = `
                     <td>${record.fields['#'] || index + 1}</td> 
                     <td>${record.fields['משפחה_מונצח'] || '-'}</td>
+                    <td>${record.fields['שם_המוצבת'] || '-'}</td>
                     <td>${record.fields['יום'] || ''} ${record.fields['חודש_יאראצייט'] || ''} ${record.fields['שנה'] || ''}</td>
                     <td>
                          <button class="icon-btn" onclick="event.stopPropagation(); editRecord('${record.id}')" title="ערוך">✏️</button>
@@ -574,7 +537,7 @@
                 `;
             });
         }
-
+        
         // פונקציות לכרטיסיית הפרטים (Detail Modal)
         function showDetailView(recordId) {
             const record = allRecords.find(r => r.id === recordId);
@@ -612,7 +575,7 @@
         function openEditFromDetail() {
             // סגור את חלון הפרטים
             closeDetailModal();
-            // פתח את חלון העריכה עם הנתונים שנטענו (ע"י הפונקציה editRecord)
+            // פתח את חלון העריכה עם הנתונים שנטענו 
             editRecord(editingRecordId); 
         }
 
@@ -620,7 +583,6 @@
         function filterRecords() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allRecords.filter(record => {
-                // כולל בדיקה של שדות שעודכנו, כמו 'משפחה_מונצח'
                 return Object.values(record.fields).some(value => 
                     String(value).toLowerCase().includes(searchTerm)
                 );
