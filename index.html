@@ -16,11 +16,12 @@
             --primary-color: #5A67D8; /* אינדיגו */
             --primary-light: #7F9CF5;
             --success-color: #48BB78;
+            --secondary-color: #718096;
             --background-color: #edf2f7;
             --surface-color: #ffffff;
             --text-color: #2D3748;
-            --shadow-light: 4px 4px 8px rgba(0, 0, 0, 0.05);
-            --shadow-dark: -4px -4px 8px rgba(255, 255, 255, 0.5);
+            --shadow-light: 6px 6px 12px rgba(0, 0, 0, 0.05); /* עמוק יותר */
+            --shadow-dark: -6px -6px 12px rgba(255, 255, 255, 0.5);
         }
 
         body {
@@ -53,7 +54,7 @@
             align-items: center;
             padding: 15px 30px;
             text-decoration: none;
-            color: var(--text-color);
+            color: var(--secondary-color);
             font-size: 16px;
             transition: all 0.2s;
             font-weight: 500;
@@ -61,6 +62,7 @@
 
         .sidebar-menu a:hover {
             background-color: #e2e8f0;
+            color: var(--text-color);
         }
 
         .sidebar-menu a.active {
@@ -94,7 +96,6 @@
         }
 
         .container {
-            /* מכולה גמישה */
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -124,6 +125,7 @@
             align-items: center;
             gap: 8px;
             box-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
 
         .btn-primary {
@@ -139,6 +141,7 @@
         .btn:hover {
             transform: translateY(-1px);
             opacity: 0.95;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.15);
         }
 
         .search-box {
@@ -155,6 +158,7 @@
             transition: all 0.3s;
             background: var(--background-color);
             box-shadow: inset 3px 3px 6px rgba(0,0,0,0.1), inset -3px -3px 6px var(--surface-color);
+            direction: rtl; /* חשוב לשדה חיפוש */
         }
         
         .search-box input:focus {
@@ -171,14 +175,19 @@
             flex-grow: 1;
         }
         
+        .table-header-wrapper {
+             overflow-x: auto;
+        }
         /* עוטף את גוף הטבלה בלבד כדי לאפשר גלילה אינסופית */
         .table-body-wrapper {
             max-height: calc(100vh - 350px); /* גובה מקסימלי לגלילה */
-            overflow-y: auto;
+            overflow-y: scroll; /* שינוי מ-auto ל-scroll כדי לוודא גלילה */
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
+            min-width: 800px; /* כדי לוודא שהטבלה אינה מתכווצת מדי */
             border-collapse: collapse;
             font-size: 14px;
         }
@@ -225,9 +234,8 @@
             background: #edf2f7;
         }
         
-        /* טופס כרטיסיית צד נפתחת (Off-Canvas Sidebar) */
+        /* *** תיקון קריטי: טופס כרטיסיית צד נפתחת (Off-Canvas Sidebar) *** */
         .side-modal {
-            display: none;
             position: fixed;
             top: 0;
             right: 0;
@@ -235,17 +243,23 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.4);
             z-index: 1000;
+            /* הסתרה מוחלטת כברירת מחדל */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
         }
 
         .side-modal.show {
-            display: block;
+            opacity: 1;
+            visibility: visible;
         }
 
         .side-modal-content {
             position: absolute;
             top: 0;
             right: 0;
-            width: 450px; /* רוחב הטופס */
+            width: 450px;
+            max-width: 90%;
             height: 100%;
             background: var(--surface-color);
             box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
@@ -256,7 +270,7 @@
         }
         
         .side-modal.show .side-modal-content {
-            transform: translateX(0);
+            transform: translateX(0); /* החלקה פנימה */
         }
 
         .side-modal-header {
@@ -302,6 +316,7 @@
             font-size: 15px;
             background: #f7fafc;
             transition: border-color 0.2s;
+            direction: rtl; /* חשוב לשדות קלט */
         }
 
         .form-group input:focus, .form-group select:focus {
@@ -328,7 +343,7 @@
         .loader-scroll {
             text-align: center;
             padding: 15px;
-            color: #718096;
+            color: var(--secondary-color);
             display: none;
         }
         
@@ -343,7 +358,7 @@
         .loading, .empty-state {
              text-align: center;
              padding: 60px;
-             color: #718096;
+             color: var(--secondary-color);
         }
         .spinner {
             border: 3px solid #e2e8f0;
@@ -406,8 +421,8 @@
                 </div>
 
                 <div id="tableContent" style="display: none;">
-                    <div class="table-wrapper">
-                        <table>
+                    <div class="table-header-wrapper">
+                         <table>
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -437,7 +452,14 @@
                 </div>
 
                 <div id="emptyState" style="display: none;" class="empty-state">
-                    </div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 50px; height: 50px; margin-bottom: 20px;">
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <h3>אין רשומות</h3>
+                    <p>לחץ על "הוסף רשומה" כדי להתחיל</p>
+                </div>
             </div>
         </div>
     </div>
@@ -580,9 +602,9 @@
     <script>
         let allRecords = [];
         let editingRecordId = null;
-        let nextOffset = null; // לשמירת ה-offset לדף הבא
-        let isLoading = false; // למניעת בקשות כפולות
-        let isFiltering = false; // לדעת אם אנחנו במצב חיפוש
+        let nextOffset = null;
+        let isLoading = false;
+        let isFiltering = false;
 
         const API_URL = '/.netlify/functions/airtable';
         
@@ -606,7 +628,8 @@
 
         // *** פונקציית טעינת רשומות (עם תמיכה ב-Pagination) ***
         async function fetchRecords(reset = false) {
-            if (isLoading || (nextOffset === null && !reset)) return;
+            // מאפשר לטעון רק אם לא טוענים כרגע, או אם מבצעים איפוס, או אם יש offset (כלומר יש עוד נתונים)
+            if (isLoading || (!reset && nextOffset === null && allRecords.length > 0)) return;
             
             isLoading = true;
             document.getElementById('loaderScroll').style.display = 'block';
@@ -668,7 +691,6 @@
             recordsToDisplay.forEach((record, index) => {
                 const row = tbody.insertRow();
                 
-                // **הוספת אירוע לחיצה על השורה**
                 row.onclick = () => showDetailView(record.id); 
                 row.style.cursor = 'pointer'; 
                 
@@ -685,13 +707,16 @@
             });
         }
         
-        // *** לוגיקת גלילה אינסופית ***
+        // *** לוגיקת גלילה אינסופית (Infinite Scroll) ***
         const tableBodyWrapper = document.getElementById('tableBodyWrapper');
         tableBodyWrapper.addEventListener('scroll', () => {
-            if (isFiltering) return; // לא טוענים בזמן חיפוש
+            if (isFiltering) return;
             
             // בדיקה אם המשתמש הגיע לתחתית
-            const isAtBottom = tableBodyWrapper.scrollTop + tableBodyWrapper.clientHeight >= tableBodyWrapper.scrollHeight - 50; // 50px buffer
+            // scrollHeight - גובה כל התוכן הניתן לגלילה
+            // scrollTop - כמה גללנו למטה
+            // clientHeight - הגובה הנראה של ה-Wrapper
+            const isAtBottom = tableBodyWrapper.scrollTop + tableBodyWrapper.clientHeight >= tableBodyWrapper.scrollHeight - 100; // 100px buffer
             
             if (isAtBottom && nextOffset !== null && !isLoading) {
                 fetchRecords(false);
@@ -706,7 +731,7 @@
             document.getElementById('modalTitle').textContent = 'הוסף רשומה חדשה';
             document.getElementById('recordForm').reset();
             document.getElementById('recordModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden'; // מונע גלילה ברקע
         }
 
         function editRecord(recordId) {
@@ -717,7 +742,6 @@
             document.getElementById('modalTitle').textContent = 'ערוך רשומה קיימת';
             const form = document.getElementById('recordForm');
             
-            // איפוס והטענת נתונים
             form.reset();
             Object.keys(record.fields).forEach(fieldName => {
                 const input = form.querySelector(`[name="${fieldName}"]`);
@@ -730,7 +754,7 @@
 
         function closeModal() {
             document.getElementById('recordModal').classList.remove('show');
-            document.body.style.overflow = 'auto';
+            document.body.style.overflow = 'auto'; // מחזיר גלילה ברקע
         }
         
         // פרטי רשומה (Detail Modal)
@@ -751,7 +775,7 @@
                  detailContent.innerHTML += `
                      <div class="form-group">
                          <label>${f.label}:</label>
-                         <div class="value">${value}</div>
+                         <div class="value" style="font-weight: 400; font-size: 15px; color: var(--text-color);">${value}</div>
                      </div>
                  `;
              });
@@ -775,7 +799,6 @@
         document.getElementById('recordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // ... לוגיקת שמירת נתונים זהה ...
             const formData = new FormData(e.target);
             const fields = {};
             
@@ -796,7 +819,7 @@
                 if (!response.ok) throw new Error('שגיאה בשמירת הרשומה');
 
                 closeModal();
-                // טעינה מחדש של כל הרשומות כדי לכלול את השינוי או הרשומה החדשה
+                // טעינה מחדש של כל הרשומות
                 await fetchRecords(true); 
             } catch (error) {
                 showError('שגיאה בשמירת הרשומה: ' + error.message);
@@ -813,7 +836,6 @@
 
                 if (!response.ok) throw new Error('שגיאה במחיקת הרשומה');
 
-                // טעינה מחדש של כל הרשומות
                 await fetchRecords(true); 
             } catch (error) {
                 showError('שגיאה במחיקת הרשומה: ' + error.message);
@@ -837,7 +859,6 @@
                     );
                 });
                 
-                // הצגת הרשומות המסוננות בטבלה
                 displayRecords(filtered, true);
                 
                 if (filtered.length === 0) {
@@ -847,7 +868,6 @@
                 }
             } else {
                 isFiltering = false;
-                // הצגת הרשומות שנטענו כבר כרגיל
                 displayRecords(allRecords, true); 
                 
                 if (nextOffset === null && allRecords.length > 0) {
@@ -858,7 +878,7 @@
 
         function showError(message) {
             document.getElementById('errorContainer').innerHTML = `
-                <div class="error-message">${message}</div>
+                <div class="error-message" style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #fca5a5;">שגיאה: ${message}</div>
             `;
         }
 
