@@ -1,138 +1,102 @@
-// netlify/functions/airtable.js
+const Airtable = require('airtable');
 
-const API_KEY = 'patDOLM7ehMbIyqnm.719c1a8c64cbafaf31243b518a8127db8deb8f44c50e82726ab4cb6039e87786';
-const BASE_ID = 'app53jLOIwJtf3qVN';
-const TABLE_NAME = 'רשימת שמות';
+// ודא שמשתני הסביבה מוגדרים
+const { AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME } = process.env;
 
-const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-    'Content-Type': 'application/json'
-};
-
-exports.handler = async (event) => {
-    // Handle CORS preflight
-    if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 200,
-            headers,
-            body: ''
-        };
-    }
-
-    const airtableUrl = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}`;
-    const airtableHeaders = {
-        'Authorization': `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json'
-    };
-
-    try {
-        // *** GET - שליפת כל הרשומות באמצעות פגינציה (Pagination) ***
-        if (event.httpMethod === 'GET') {
-            let allRecords = [];
-            let offset = null; // מתחילים בלי offset
-            
-            // לולאה שתרוץ שוב ושוב עד ש-Airtable לא יחזיר יותר offset
-            do {
-                let url = airtableUrl;
-                if (offset) {
-                    // הוספת פרמטר offset לבקשת ה-API אם קיים
-                    url += `?offset=${offset}`;
-                }
-
-                const response = await fetch(url, {
-                    headers: airtableHeaders
-                });
-                
-                const data = await response.json();
-
-                if (!response.ok) {
-                    // אם ה-API מחזיר שגיאה, זרוק שגיאה
-                    throw new Error(data.error.type || 'Airtable API Error');
-                }
-
-                // הוספת הרשומות שנתקבלו למערך הכללי
-                allRecords = allRecords.concat(data.records);
-                
-                // עדכון ה-offset הבא. אם אין יותר רשומות, data.offset יהיה undefined, והלולאה תיעצר
-                offset = data.offset; 
-
-            } while (offset); // הלולאה ממשיכה כל עוד יש offset
-
-            // מחזירים את כל הרשומות יחד
-            return {
-                statusCode: 200,
-                headers,
-                // מחזירים את כל הרשומות כשהן עטופות בפורמט ש-index.html מצפה לו
-                body: JSON.stringify({ records: allRecords }) 
-            };
-        }
-
-        // POST - Create new record
-        if (event.httpMethod === 'POST') {
-            const body = JSON.parse(event.body);
-            const response = await fetch(airtableUrl, {
-                method: 'POST',
-                headers: airtableHeaders,
-                body: JSON.stringify({ fields: body.fields })
-            });
-            const data = await response.json();
-            
-            return {
-                statusCode: response.status,
-                headers,
-                body: JSON.stringify(data)
-            };
-        }
-
-        // PATCH - Update record
-        if (event.httpMethod === 'PATCH') {
-            const recordId = event.queryStringParameters.id;
-            const body = JSON.parse(event.body);
-            
-            const response = await fetch(`${airtableUrl}/${recordId}`, {
-                method: 'PATCH',
-                headers: airtableHeaders,
-                body: JSON.stringify({ fields: body.fields })
-            });
-            const data = await response.json();
-            
-            return {
-                statusCode: response.status,
-                headers,
-                body: JSON.stringify(data)
-            };
-        }
-
-        // DELETE - Delete record
-        if (event.httpMethod === 'DELETE') {
-            const recordId = event.queryStringParameters.id;
-            
-            const response = await fetch(`${airtableUrl}/${recordId}`, {
-                method: 'DELETE',
-                headers: airtableHeaders
-            });
-            const data = await response.json();
-            
-            return {
-                statusCode: response.status,
-                headers,
-                body: JSON.stringify(data)
-            };
-        }
-
-        return {
-            statusCode: 405,
-            headers,
-            body: JSON.stringify({ error: 'Method not allowed' })
-        };
-
-    } catch (error) {
+if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !AIRTABLE_TABLE_NAME) {
+    console.error("Airtable environment variables are not set correctly.");
+    // יצירת פונקציה דמה כדי למנוע קריסה במהלך פיתוח מקומי ללא משתנים
+    exports.handler = async (event, context) => {
         return {
             statusCode: 500,
-            headers,
-            body: JSON.stringify({ error: error.message })
+            body: JSON.stringify({ error: 'Airtable environment variables missing' }),
         };
-    }
-};
+    };
+} else {
+    // אתחול Airtable
+    const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
+    const table = base(AIRTABLE_TABLE_NAME);
+
+    // פונקציית Netlify Function הראשית
+    exports.handler = async (event, context) => {
+        const { httpMethod, queryStringParameters } = event;
+        
+        try {
+            switch (httpMethod) {
+                // *** קריאה (READ) עם תמיכה ב-OFFSET (PAGINATION) ***
+                case 'GET': {
+                    const offset = queryStringParameters.offset || null;
+                    const pageSize = 100; // הגבלת טעינה ל-100 רשומות בכל פעם
+
+                    let queryOptions = {
+                        pageSize: pageSize,
+                        view: "Grid view", // שם התצוגה שלך
+                        sort: [{field: "#", direction: "asc"}] // מיון לפי שדה #
+                    };
+
+                    if (offset) {
+                        queryOptions.offset = offset;
+                    }
+
+                    const records = await table.select(queryOptions).firstPage();
+                    
+                    // החזרת הנתונים, כולל ה-offset הבא (אם קיים)
+                    return {
+                        statusCode: 200,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            records: records,
+                            offset: records.offset || null 
+                        }),
+                    };
+                }
+
+                // *** יצירה (CREATE) ***
+                case 'POST': {
+                    const { fields } = JSON.parse(event.body);
+                    const newRecord = await table.create([{ fields }]);
+                    return {
+                        statusCode: 201,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newRecord),
+                    };
+                }
+
+                // *** עדכון (UPDATE) ***
+                case 'PATCH': {
+                    const { id } = queryStringParameters;
+                    const { fields } = JSON.parse(event.body);
+                    if (!id) throw new Error('Record ID is required for PATCH.');
+                    
+                    const updatedRecord = await table.update([{ id, fields }]);
+                    return {
+                        statusCode: 200,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedRecord),
+                    };
+                }
+
+                // *** מחיקה (DELETE) ***
+                case 'DELETE': {
+                    const { id } = queryStringParameters;
+                    if (!id) throw new Error('Record ID is required for DELETE.');
+                    
+                    await table.destroy([id]);
+                    return {
+                        statusCode: 200,
+                        body: JSON.stringify({ success: true, id }),
+                    };
+                }
+
+                default:
+                    return { statusCode: 405, body: 'Method Not Allowed' };
+            }
+        } catch (error) {
+            console.error('Airtable operation failed:', error.message);
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ error: error.message }),
+            };
+        }
+    };
+}
