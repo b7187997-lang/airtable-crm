@@ -518,28 +518,49 @@
             { label: 'אימייל', key: 'אימייל' }
         ];
 
-
+        // *** פונקציית טעינת רשומות מעודכנת עם פגינציה (Pagination) ***
         async function fetchRecords() {
             document.getElementById('loadingState').style.display = 'block';
             document.getElementById('tableContent').style.display = 'none';
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('errorContainer').innerHTML = '';
 
+            let offset = null;
+            let fetchedRecords = [];
+            
             try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                
-                if (!response.ok) throw new Error(data.error || 'שגיאה בטעינת הנתונים');
-                
-                allRecords = data.records;
+                // לולאה שממשיכה לשלוף רשומות כל עוד קיים 'offset' (כלומר, יש עוד דפים)
+                do {
+                    let url = API_URL;
+                    // אם קיים offset, אנו מוסיפים אותו כפרמטר לכתובת
+                    if (offset) {
+                        url += `?offset=${offset}`; 
+                    }
+                    
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (!response.ok) throw new Error(data.error || 'שגיאה בטעינת הנתונים');
+                    
+                    // הוספת הרשומות שנתקבלו למערך הכללי
+                    fetchedRecords = fetchedRecords.concat(data.records);
+                    
+                    // שמירת ה-offset הבא שמוחזר מהשרת (כדי לבקש את הדף הבא)
+                    offset = data.offset; 
+                    
+                } while (offset); // הלולאה ממשיכה כל עוד ה-offset מוגדר
+
+                allRecords = fetchedRecords;
                 displayRecords(allRecords);
+
             } catch (error) {
                 showError('שגיאה בטעינת הנתונים: ' + error.message);
+            } finally {
                 document.getElementById('loadingState').style.display = 'none';
             }
         }
 
-        // 1. פונקציית תצוגת הרשומות (מצומצמת)
+        // פונקציית תצוגת הרשומות (מצומצמת)
         function displayRecords(records) {
             document.getElementById('loadingState').style.display = 'none';
             
@@ -573,7 +594,7 @@
             });
         }
 
-        // 2. פונקציות לכרטיסיית הפרטים (Detail Modal)
+        // פונקציות לכרטיסיית הפרטים (Detail Modal)
         function showDetailView(recordId) {
             const record = allRecords.find(r => r.id === recordId);
             if (!record) return;
