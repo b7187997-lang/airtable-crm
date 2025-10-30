@@ -22,15 +22,14 @@ if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !AIRTABLE_TABLE_NAME) {
         
         try {
             switch (httpMethod) {
-                // *** קריאה (READ) עם תמיכה ב-OFFSET ו-pageSize = 100 ***
+                // *** קריאה (READ) עם תיקון קריטי ל-Pagination ***
                 case 'GET': {
                     const offset = queryStringParameters.offset || null;
                     const pageSize = 100; // הגבלת טעינה ל-100 רשומות בכל פעם - חובה!
 
                     let queryOptions = {
                         pageSize: pageSize,
-                        view: "Grid view", 
-                        // חשוב לוודא ששם התצוגה נכון
+                        view: "Grid view", // ודא ששם התצוגה תקין
                         sort: [{field: "#", direction: "asc"}]
                     };
 
@@ -38,24 +37,23 @@ if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !AIRTABLE_TABLE_NAME) {
                         queryOptions.offset = offset;
                     }
 
-                    // שימו לב: Airtable מחזיר את כל הנתונים אם לא מציינים offset בבקשה הראשונה,
-                    // אבל אנחנו משתמשים ב-firstPage() וב-pageSize: 100
-                    const { records, offset: nextOffset } = await table.select(queryOptions).all().then(result => ({
-                        records: result.slice(0, pageSize), // לוקחים רק את 100 הראשונים 
-                        offset: result.offset // מחזיר את ה-offset הבא או undefined אם אין עוד
-                    }));
+                    // *** תיקון קריטי: שימוש ב-firstPage() כדי לוודא שנטענים רק 100 רשומות בפעימה ***
+                    const records = await table.select(queryOptions).firstPage();
+                    
+                    // ה-offset הבא מגיע כמאפיין של האובייקט שמחזיר .firstPage() אם יש עוד נתונים
+                    const nextOffset = records.offset || null; 
                     
                     return {
                         statusCode: 200,
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             records: records,
-                            offset: nextOffset || null 
+                            offset: nextOffset 
                         }),
                     };
                 }
 
-                // POST, PATCH, DELETE - נשארים זהים
+                // POST, PATCH, DELETE - נשארים זהים ותקינים
                 case 'POST': {
                     const { fields } = JSON.parse(event.body);
                     const newRecord = await table.create([{ fields }]);
