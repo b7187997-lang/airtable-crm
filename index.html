@@ -137,8 +137,8 @@
         }
 
         th:first-child {
-            width: 100px;
-            text-align: center;
+            width: 350px;
+            text-align: right;
         }
 
         th:last-child {
@@ -153,10 +153,10 @@
         }
 
         td:first-child {
-            text-align: center;
-            font-weight: 700;
+            text-align: right;
+            font-weight: 600;
             color: #2d3748;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         td:last-child {
@@ -399,7 +399,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>מס׳</th>
+                        <th>שם המנוח</th>
                         <th>שם משפחת המנוח</th>
                         <th>יום היאהרצייט (עברי)</th>
                         <th>פעולות</th>
@@ -606,8 +606,8 @@
 
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td>${record.fields['#'] || '-'}</td>
-                    <td><strong>${record.fields['משפחה_מונצח'] || '-'}</strong></td>
+                    <td><strong>${record.fields['שם_המונצח'] || '-'}</strong></td>
+                    <td>${record.fields['משפחה_מונצח'] || '-'}</td>
                     <td>${yahrtzeit || '-'}</td>
                     <td>
                         <button class="icon-btn" onclick="editRecord('${record.id}')" title="ערוך פרטים">✏️</button>
@@ -621,12 +621,33 @@
         tableWrapper.addEventListener('scroll', () => {
             if (isFiltering || isLoading) return;
 
-            const isAtBottom = tableWrapper.scrollTop + tableWrapper.clientHeight >= tableWrapper.scrollHeight - 100;
-
-            if (isAtBottom && nextOffset !== null) {
-                fetchRecords(false);
+            // בדיקה אם הגענו לתחתית
+            const scrollTop = tableWrapper.scrollTop;
+            const scrollHeight = tableWrapper.scrollHeight;
+            const clientHeight = tableWrapper.clientHeight;
+            
+            // כאשר נשארו פחות מ-50 פיקסלים לתחתית - טען עוד
+            if (scrollTop + clientHeight >= scrollHeight - 50) {
+                if (nextOffset !== null) {
+                    fetchRecords(false);
+                }
             }
         });
+        
+        // גם בדוק כל 2 שניות אם יש צורך לטעון עוד (למקרה שהתוכן קצר)
+        setInterval(() => {
+            if (isFiltering || isLoading) return;
+            
+            const tableWrapper = document.getElementById('tableWrapper');
+            const scrollTop = tableWrapper.scrollTop;
+            const scrollHeight = tableWrapper.scrollHeight;
+            const clientHeight = tableWrapper.clientHeight;
+            
+            // אם אין גלילה בכלל (כל התוכן נראה) וי מש offset - טען עוד
+            if (scrollHeight <= clientHeight + 10 && nextOffset !== null) {
+                fetchRecords(false);
+            }
+        }, 2000);
 
         function filterRecords() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
